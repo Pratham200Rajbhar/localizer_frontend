@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Building2, Upload, Download, Code, CheckCircle, Home, Terminal, Database } from 'lucide-react';
+import { Building2, Upload, Download, Code, CheckCircle, Home, Terminal, Database, AlertCircle, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../utils/constants';
+import { DEMO_PLATFORMS } from '../utils/constants';
+import { apiService } from '../utils/apiService';
 
 export default function Integration() {
   const navigate = useNavigate();
@@ -12,63 +12,147 @@ export default function Integration() {
   const [uploadResult, setUploadResult] = useState(null);
   const [statusResult, setStatusResult] = useState(null);
   const [downloadResult, setDownloadResult] = useState(null);
-  const [jobId, setJobId] = useState('');
-  const [filename, setFilename] = useState('demo_book_hindi.pdf');
-  const [loading, setLoading] = useState(false);
+  const [filename] = useState('demo_book_hindi.pdf');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState('');
 
-  // Upload to platform
-  const handleUpload = async () => {
-    if (!file) return;
-    setLoading(true);
-    setError('');
+  // Load demo file
+  const loadDemoFile = async () => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('target_languages', targetLang);
-      formData.append('content_type', 'document'); // Based on file type
-      formData.append('domain', 'general');
-      formData.append('partner_id', platform);
-      formData.append('priority', 'normal');
+      // Create a demo file
+      const demoText = "This is a demo document for LMS integration testing. The content will be translated and processed through the integration pipeline.";
+      const blob = new Blob([demoText], { type: 'text/plain' });
+      const demoFile = new File([blob], 'demo_book.txt', { type: 'text/plain' });
       
-      const res = await axios.post(`${API_BASE_URL}/integration/upload`, formData);
-      if (res.data) {
-        setUploadResult(res.data);
-        setJobId(res.data.job_id || 'NCVET_1234');
-      } else {
-        setError('Upload failed - no response data');
-      }
+      setFile(demoFile);
+      setError('');
     } catch (err) {
-      console.error('Integration upload error:', err);
-      setError(`Upload failed: ${err.response?.data?.detail || err.message}`);
+      setError('Failed to load demo file: ' + err.message);
     }
-    setLoading(false);
   };
 
-  // Check status
+  // Handle file upload for integration
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      setError('');
+    }
+  };
+
+  // Real API upload to integration endpoint
+  const handleUpload = async () => {
+    if (!file) {
+      setError('Please select a file first');
+      return;
+    }
+    
+    setIsUploading(true);
+    setError('');
+    setUploadResult(null);
+
+    try {
+      const response = await apiService.integrationUpload(
+        file,
+        [targetLang],
+        'document',
+        'general',
+        `${platform.toLowerCase()}_partner_123`,
+        'normal'
+      );
+      
+      setUploadResult(response);
+    } catch (err) {
+      setError('Upload failed: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Check integration status
   const handleCheckStatus = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await axios.get(`${API_BASE_URL}/integration/status`);
-      setStatusResult(res.data);
-    } catch (err) {
-      setError('Status check failed');
+    if (!uploadResult?.job_id) {
+      setError('No job ID available. Please upload a file first.');
+      return;
     }
-    setLoading(false);
+
+    setIsCheckingStatus(true);
+    setError('');
+
+    try {
+      const response = await apiService.getIntegrationResults(uploadResult.job_id);
+      setStatusResult(response);
+    } catch (err) {
+      setError('Status check failed: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsCheckingStatus(false);
+    }
   };
 
-  // Download result
+  // Download integration results
   const handleDownload = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const url = `${API_BASE_URL}/integration/download/${jobId}/${targetLang}/${filename}`;
-      setDownloadResult({ url });
-    } catch (err) {
-      setError('Download failed');
+    if (!uploadResult?.job_id) {
+      setError('No job ID available for download');
+      return;
     }
-    setLoading(false);
+
+    setIsDownloading(true);
+    setError('');
+
+    try {
+      const downloadFilename = `${uploadResult.job_id}_${targetLang}.txt`;
+      const partnerId = `${platform.toLowerCase()}_partner_123`;
+      
+      const response = await apiService.downloadIntegrationOutput(uploadResult.job_id, targetLang, downloadFilename);
+      
+      // Create and download the file
+      const url = window.URL.createObjectURL(response);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = downloadFilename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setDownloadResult({
+        job_id: uploadResult.job_id,
+        status: 'Downloaded',
+        download_url: downloadFilename,
+        completion_time: new Date().toISOString()
+      });
+    } catch (err) {
+      setError('Download failed: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Generate CURL command
+  const generateCurlCommand = (action) => {
+    const baseUrl = "http://localhost:8000";
+    
+    switch (action) {
+      case 'upload':
+        return `curl -X POST ${baseUrl}/integration/upload \\
+  -F "file=@demo_book_hindi.pdf" \\
+  -F "target_language=hi" \\
+  -F "partner=NCVET"`;
+      
+      case 'status':
+        return `curl -X GET ${baseUrl}/integration/status \\
+  -H "Content-Type: application/json"`;
+      
+      case 'download':
+        return `curl -X GET "${baseUrl}/integration/download/NCVET_1234/hi/demo_book_hindi.pdf" \\
+  -H "Accept: application/octet-stream" \\
+  --output demo_book_hindi.pdf`;
+      
+      default:
+        return '';
+    }
   };
 
   return (
@@ -84,209 +168,277 @@ export default function Integration() {
               <Home className="w-5 h-5" />
               <span>Back to Home</span>
             </button>
-            <h1 className="text-xl font-bold text-gray-900">Enterprise Integration</h1>
-            <div className="w-24"></div>
+            <div className="text-skillBlue font-bold text-lg">Enterprise Integration</div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl mb-6">
-            <Building2 className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">LMS / NCVET / MSDE Integration</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Seamless API integration with learning management systems and educational platforms
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            LMS / NCVET / MSDE Integration
+          </h1>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+            Seamless API integration with enterprise platforms for automated content localization
           </p>
+          <div className="mt-6">
+            <button
+              onClick={loadDemoFile}
+              className="bg-skillBlue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Load Demo File
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-8">
-          {/* Upload Section */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-lg">
-            <div className="flex items-center mb-6">
-              <Upload className="w-6 h-6 text-orange-600 mr-3" />
-              <h3 className="text-2xl font-bold text-gray-900">A. Upload to Platform</h3>
-            </div>
+        {/* Platform Selection & File Upload */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <Building2 className="w-6 h-6 text-orange-600 mr-2" />
+              Platform Configuration
+            </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:border-orange-500 transition-colors">
-                  <Building2 className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                  <input 
-                    type="file" 
-                    accept=".pdf,.docx,.mp3,.mp4" 
-                    onChange={e => setFile(e.target.files[0])} 
-                    className="hidden" 
-                    id="integrationUpload"
-                  />
-                  <label htmlFor="integrationUpload" className="cursor-pointer">
-                    <div className="text-md font-medium text-gray-900 mb-1">
-                      {file ? file.name : "Choose content file"}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      PDF, DOCX, MP3, MP4 supported
-                    </div>
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Platform</label>
-                    <select 
-                      className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:outline-none bg-white/50"
-                      value={platform} 
-                      onChange={e => setPlatform(e.target.value)}
-                    >
-                      <option value="LMS">LMS</option>
-                      <option value="NCVET">NCVET</option>
-                      <option value="MSDE">MSDE</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Target Language</label>
-                    <input 
-                      className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-orange-500 focus:outline-none bg-white/50" 
-                      value={targetLang} 
-                      onChange={e => setTargetLang(e.target.value)} 
-                      placeholder="e.g., hi"
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-2xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-                  onClick={handleUpload} 
-                  disabled={loading || !file}
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <Upload className="w-5 h-5 mr-2" />
-                  )}
-                  {loading ? 'Uploading...' : 'Upload to Platform'}
-                </button>
-
-                {error && (
-                  <div className="p-4 bg-red-50 rounded-2xl border border-red-200">
-                    <span className="text-red-700">{error}</span>
-                  </div>
-                )}
-
-                {uploadResult && (
-                  <div className="p-4 bg-green-50 rounded-2xl border border-green-200">
-                    <div className="flex items-center mb-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                      <span className="font-semibold text-green-700">Upload Successful</span>
-                    </div>
-                    <pre className="text-xs text-green-700 bg-green-100 rounded p-2 overflow-x-auto">
-                      {JSON.stringify(uploadResult, null, 2)}
-                    </pre>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-gray-900 rounded-2xl p-6">
-                <div className="flex items-center mb-4">
-                  <Terminal className="w-5 h-5 text-green-400 mr-2" />
-                  <span className="text-green-400 font-mono text-sm">CURL Command</span>
-                </div>
-                <pre className="text-green-300 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
-{`curl -X POST https://api.safehorizon.in/integration/upload \\
-  -F "file=@demo_book_hindi.pdf" \\
-  -F "target_language=hi" \\
-  -F "partner=NCVET"`}
-                </pre>
-              </div>
-            </div>
-          </div>
-
-          {/* Status Check Section */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <Database className="w-6 h-6 text-blue-600 mr-3" />
-                <h3 className="text-2xl font-bold text-gray-900">B. Check Status</h3>
-              </div>
-              <button 
-                className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50"
-                onClick={handleCheckStatus} 
-                disabled={loading}
+            {/* Platform Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Platform
+              </label>
+              <select
+                value={platform}
+                onChange={(e) => setPlatform(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-orange-600"
               >
-                Check Status
-              </button>
+                {DEMO_PLATFORMS.map(platform => (
+                  <option key={platform.id} value={platform.id.toUpperCase()}>
+                    {platform.name} - {platform.description}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {statusResult && (
-              <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-                <div className="flex items-center mb-4">
-                  <Database className="w-5 h-5 text-blue-600 mr-2" />
-                  <span className="font-semibold text-blue-700">Live System Status</span>
+            {/* Language Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Language
+              </label>
+              <select
+                value={targetLang}
+                onChange={(e) => setTargetLang(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-orange-600"
+              >
+                <option value="hi">Hindi (hi)</option>
+                <option value="bn">Bengali (bn)</option>
+                <option value="ta">Tamil (ta)</option>
+                <option value="te">Telugu (te)</option>
+                <option value="gu">Gujarati (gu)</option>
+              </select>
+            </div>
+
+            {/* File Upload */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-600 transition-colors">
+              <Database className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600 mb-3">Upload content for platform integration</p>
+              <input
+                type="file"
+                accept=".pdf,.docx,.txt"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="integration-upload"
+              />
+              <label
+                htmlFor="integration-upload"
+                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors cursor-pointer inline-block"
+              >
+                Choose File
+              </label>
+            </div>
+
+            {file && (
+              <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  <span className="text-sm font-medium">{file.name}</span>
                 </div>
-                <pre className="text-sm text-blue-800 bg-blue-100 rounded-xl p-4 overflow-x-auto">
-                  {JSON.stringify(statusResult, null, 2)}
-                </pre>
               </div>
             )}
           </div>
 
-          {/* Download Section */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-lg">
-            <div className="flex items-center mb-6">
-              <Download className="w-6 h-6 text-green-600 mr-3" />
-              <h3 className="text-2xl font-bold text-gray-900">C. Download Result</h3>
-            </div>
+          {/* API Demonstration */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+              <Terminal className="w-6 h-6 text-orange-600 mr-2" />
+              API Integration Demo
+            </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Filename</label>
-                  <input 
-                    className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-500 focus:outline-none bg-white/50" 
-                    value={filename} 
-                    onChange={e => setFilename(e.target.value)} 
-                    placeholder="demo_book_hindi.pdf"
-                  />
+            {/* Error Display */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center">
+                  <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                  <span className="text-red-700">{error}</span>
                 </div>
+              </div>
+            )}
 
-                <button 
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-2xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 disabled:opacity-50 flex items-center justify-center"
-                  onClick={handleDownload} 
-                  disabled={loading || !jobId || !filename}
+            <div className="space-y-4">
+              {/* Upload Demo */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Upload to Platform</h3>
+                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                  {generateCurlCommand('upload')}
+                </div>
+                <button
+                  onClick={handleUpload}
+                  disabled={!file || isUploading}
+                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                 >
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Result
+                  {isUploading ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Execute Upload'
+                  )}
                 </button>
-
-                {downloadResult && (
-                  <div className="p-4 bg-green-50 rounded-2xl border border-green-200">
-                    <div className="flex items-center mb-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                      <span className="font-semibold text-green-700">Download Ready</span>
-                    </div>
-                    <a 
-                      href={downloadResult.url} 
-                      className="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
-                      download
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Click to download
-                    </a>
-                  </div>
-                )}
               </div>
 
-              <div className="bg-gray-900 rounded-2xl p-6">
-                <div className="flex items-center mb-4">
-                  <Terminal className="w-5 h-5 text-green-400 mr-2" />
-                  <span className="text-green-400 font-mono text-sm">Download Command</span>
+              {/* Status Demo */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">2. Check Status</h3>
+                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                  {generateCurlCommand('status')}
                 </div>
-                <pre className="text-green-300 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
-{`curl -X GET https://api.safehorizon.in/integration/download/${jobId || '{job_id}'}/${targetLang}/${filename}`}
-                </pre>
+                <button
+                  onClick={handleCheckStatus}
+                  disabled={isCheckingStatus}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors flex items-center justify-center"
+                >
+                  {isCheckingStatus ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      Checking...
+                    </>
+                  ) : (
+                    'Check Status'
+                  )}
+                </button>
+              </div>
+
+              {/* Download Demo */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">3. Download Result</h3>
+                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                  {generateCurlCommand('download')}
+                </div>
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition-colors flex items-center justify-center"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      Downloading...
+                    </>
+                  ) : (
+                    'Download File'
+                  )}
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* API Response Display */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Upload Response */}
+          {uploadResult && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Upload className="w-5 h-5 text-orange-600 mr-2" />
+                Upload Response
+              </h3>
+              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+{JSON.stringify(uploadResult, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {/* Status Response */}
+          {statusResult && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Code className="w-5 h-5 text-blue-600 mr-2" />
+                Status Response
+              </h3>
+              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+{JSON.stringify(statusResult, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {/* Download Response */}
+          {downloadResult && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Download className="w-5 h-5 text-green-600 mr-2" />
+                Download Response
+              </h3>
+              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+{JSON.stringify(downloadResult, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+
+        {/* Integration Flow Explanation */}
+        <div className="mt-12 bg-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Integration Workflow</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Upload className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Upload Content</h3>
+              <p className="text-gray-600">
+                Send educational content to the platform with localization requirements
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Terminal className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">2. Monitor Progress</h3>
+              <p className="text-gray-600">
+                Track processing status and receive real-time updates on localization progress
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Download className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">3. Retrieve Results</h3>
+              <p className="text-gray-600">
+                Download localized content ready for deployment on target platforms
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Backend Integration Notice */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertCircle className="w-5 h-5 text-blue-600 mr-2" />
+            <p className="text-blue-800">
+              <strong>Live Backend Integration:</strong> This page connects to the FastAPI backend at{' '}
+              <code className="bg-blue-100 px-2 py-1 rounded">http://localhost:8000</code>. 
+              Make sure your backend server is running for full functionality.
+            </p>
           </div>
         </div>
       </div>

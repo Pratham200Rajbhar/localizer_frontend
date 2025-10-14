@@ -1,26 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Users, Code, Globe, Zap, Shield, Award, Target } from 'lucide-react';
-import { API_ENDPOINTS, DEFAULT_LANGUAGES } from '../utils/constants';
+import { DEFAULT_LANGUAGES } from '../utils/constants';
 
 export default function About() {
-  const [languages, setLanguages] = useState([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    axios.get(API_ENDPOINTS.supportedLanguages)
-      .then(res => {
-        if (res.data && res.data.supported_languages) {
-          setLanguages(Object.entries(res.data.supported_languages));
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch languages');
-        // Fallback to default languages when API is not available
-        setLanguages(DEFAULT_LANGUAGES);
-      });
-  }, []);
+  
+  // Use static languages data
+  const languages = DEFAULT_LANGUAGES;
 
   const solutions = [
     { icon: <Code className="w-6 h-6" />, title: "Document Translation", desc: "Upload PDFs, DOCX, TXT files and get accurate translations with confidence scores" },
@@ -126,7 +113,7 @@ export default function About() {
                 Frontend Technologies
               </h3>
               <div className="space-y-3">
-                {['React.js with Hooks', 'TailwindCSS for styling', 'Axios for API calls', 'React Router DOM', 'Lucide React icons'].map((tech, index) => (
+                {['React.js with Hooks', 'TailwindCSS for styling', 'Component-based design', 'React Router DOM', 'Lucide React icons'].map((tech, index) => (
                   <div key={index} className="flex items-center">
                     <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
                     <span className="text-gray-700">{tech}</span>
@@ -137,10 +124,10 @@ export default function About() {
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <Zap className="w-6 h-6 text-purple-600 mr-2" />
-                Backend & AI
+                Demo Technologies
               </h3>
               <div className="space-y-3">
-                {['FastAPI Python framework', 'IndicTrans2 for translation', 'Whisper for speech recognition', 'VITS/Tacotron2 for TTS', 'PostgreSQL database'].map((tech, index) => (
+                {['Static frontend demonstration', 'Simulated AI processing', 'Sample multilingual content', 'Interactive user workflows', 'Educational showcasing'].map((tech, index) => (
                   <div key={index} className="flex items-center">
                     <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
                     <span className="text-gray-700">{tech}</span>

@@ -10,7 +10,7 @@ Build a clean, production-ready frontend for:
 ---
 
 ## GOAL
-Create a simple, professional website that integrates with a FastAPI backend.  
+Create a simple, professional website that demonstrates AI localization capabilities.  
 Show working demos for text, audio, video translation, and LMS/NCVET/MSDE integrations.  
 No fancy animations, no monitoring, no testing modules — just functional clarity.
 

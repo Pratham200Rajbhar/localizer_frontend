@@ -1,17 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Mic, Video, Building2, Sparkles, Globe, Zap, Shield } from 'lucide-react';
-import { testAPI } from '../utils/apiTest';
 
 export default function Home() {
   const navigate = useNavigate();
-  
-  // Test API on component mount
-  React.useEffect(() => {
-    testAPI().then(result => {
-      console.log('API Test Result:', result);
-    });
-  }, []);
 
   const features = [
     {
@@ -41,6 +33,13 @@ export default function Home() {
       description: "Seamless integration with LMS, NCVET, and MSDE platforms",
       route: "/integration",
       gradient: "from-orange-500 to-red-500"
+    },
+    {
+      icon: <Zap className="w-8 h-8" />,
+      title: "API Testing Dashboard",
+      description: "Test all backend endpoints with ready-made CURL commands and live results",
+      route: "/api-testing",
+      gradient: "from-violet-500 to-purple-500"
     }
   ];
 

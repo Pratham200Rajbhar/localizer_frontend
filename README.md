@@ -1,34 +1,34 @@
-# AI-Powered Multilingual Content Localization Engine
+# AI-Powered Multilingual Content Localization Engine - Frontend Demo
 
 **Team SafeHorizon | Smart India Hackathon 2025**  
 **Problem Statement ID: 25203**
 
 ## 🚀 Project Overview
 
-A comprehensive React-based frontend for an AI-powered multilingual translation and localization system supporting 22 Indian languages. This application provides intuitive interfaces for document translation, audio localization, video subtitling, and enterprise LMS integration.
+A React-based frontend demonstration of an AI-powered multilingual translation and localization system supporting 22 Indian languages. This application provides intuitive interfaces showcasing document translation, audio localization, video subtitling, and enterprise LMS integration capabilities.
+
+> **Note**: This is a frontend-only demonstration with simulated backend functionality for evaluation purposes.
 
 ## ✨ Features
 
-- **📄 Document Translation**: Upload PDF/DOCX/TXT files with auto language detection
-- **🎵 Audio Localization**: Complete speech-to-text → translation → text-to-speech pipeline
-- **🎥 Video Localization**: Generate subtitles in Indian languages
-- **🏢 LMS Integration**: NCVET, MSDE, and LMS platform integration with API demos
-- **🌍 22 Indian Languages**: Complete support for all major Indian languages
+- **📄 Document Translation**: Demo interface for PDF/DOCX/TXT file translation
+- **🎵 Audio Localization**: Simulated speech-to-text → translation → text-to-speech pipeline
+- **🎥 Video Localization**: Demo subtitle generation in Indian languages
+- **🏢 LMS Integration**: NCVET, MSDE, and LMS platform integration demos with sample API responses
+- **🌍 22 Indian Languages**: Complete language support showcase
 - **🎨 Clean UI**: Professional design with TailwindCSS and Skill India branding
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React.js, TailwindCSS, React Router DOM
-- **HTTP Client**: Axios
 - **Icons**: Lucide React
 - **Fonts**: Poppins, Inter
-- **Backend API**: FastAPI (separate repository)
+- **Demo Mode**: Static demonstration with simulated processing
 
 ## 📋 Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Backend API running on `http://localhost:8000`
 
 ## 🚀 Quick Start
 
@@ -91,16 +91,16 @@ public/
 | **LMS Integration** | `/integration` | Enterprise platform integration demos |
 | **About** | `/about` | Project details and team information |
 
-## 🔧 API Integration
+## 🔧 Demo Features
 
-All pages are configured to work with the FastAPI backend:
+All pages provide interactive demonstrations:
 
-- **Base URL**: `${process.env.REACT_APP_API_URL}` (configurable)
-- **Supported Languages**: `/supported-languages`
-- **Document APIs**: `/content/upload`, `/detect-language`, `/translate`
-- **Audio APIs**: `/speech/translate`, `/speech/download/{filename}`
-- **Video APIs**: `/video/localize`, `/video/download/{filename}`
-- **Integration APIs**: `/integration/upload`, `/integration/status`, `/integration/download/{job_id}/{language}/{filename}`
+- **Static Data**: Pre-configured language support and demo content
+- **Simulated Processing**: Realistic workflow demonstrations
+- **File Handling**: Mock file upload and download functionality
+- **Audio Processing**: Simulated speech-to-text and translation workflows
+- **Video Processing**: Demo subtitle generation and formatting
+- **Integration Demos**: Mock API responses for enterprise platforms
 
 ## 🎨 Design System
 

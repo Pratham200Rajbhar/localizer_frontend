@@ -7,6 +7,7 @@ import AudioLocalization from './pages/AudioLocalization';
 import VideoLocalization from './pages/VideoLocalization';
 import Integration from './pages/Integration';
 import About from './pages/About';
+import ApiTesting from './pages/ApiTesting';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/video" element={<VideoLocalization />} />
         <Route path="/integration" element={<Integration />} />
         <Route path="/about" element={<About />} />
+        <Route path="/api-testing" element={<ApiTesting />} />
       </Routes>
     </Router>
   );
