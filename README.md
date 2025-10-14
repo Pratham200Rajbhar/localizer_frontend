@@ -1,70 +1,148 @@
-# Getting Started with Create React App
+# AI-Powered Multilingual Content Localization Engine
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Team SafeHorizon | Smart India Hackathon 2025**  
+**Problem Statement ID: 25203**
 
-## Available Scripts
+## 🚀 Project Overview
 
-In the project directory, you can run:
+A comprehensive React-based frontend for an AI-powered multilingual translation and localization system supporting 22 Indian languages. This application provides intuitive interfaces for document translation, audio localization, video subtitling, and enterprise LMS integration.
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **📄 Document Translation**: Upload PDF/DOCX/TXT files with auto language detection
+- **🎵 Audio Localization**: Complete speech-to-text → translation → text-to-speech pipeline
+- **🎥 Video Localization**: Generate subtitles in Indian languages
+- **🏢 LMS Integration**: NCVET, MSDE, and LMS platform integration with API demos
+- **🌍 22 Indian Languages**: Complete support for all major Indian languages
+- **🎨 Clean UI**: Professional design with TailwindCSS and Skill India branding
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Tech Stack
 
-### `npm test`
+- **Frontend**: React.js, TailwindCSS, React Router DOM
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
+- **Fonts**: Poppins, Inter
+- **Backend API**: FastAPI (separate repository)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 📋 Prerequisites
 
-### `npm run build`
+- Node.js (v16 or higher)
+- npm or yarn
+- Backend API running on `http://localhost:8000`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Quick Start
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Environment Setup
+The `.env` file is already configured:
+```env
+REACT_APP_API_URL=http://localhost:8000
+REACT_APP_VERSION=1.0.0
+REACT_APP_ENVIRONMENT=development
+```
 
-### `npm run eject`
+### 3. Start Development Server
+```bash
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The application will open at `http://localhost:3000`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. Build for Production
+```bash
+npm run build
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📁 Project Structure
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+src/
+├── pages/
+│   ├── Home.js                 # Landing page with navigation
+│   ├── DocumentTranslation.js  # Document upload & translation
+│   ├── AudioLocalization.js    # Audio translation pipeline
+│   ├── VideoLocalization.js    # Video subtitle generation
+│   ├── Integration.js          # LMS/NCVET/MSDE integration
+│   └── About.js               # Project information
+├── App.js                     # Main routing component
+├── App.css                    # TailwindCSS configuration
+└── index.css                  # Global styles & fonts
 
-## Learn More
+public/
+└── demo-assets/               # Demo files for testing
+    ├── demo_book_english.pdf
+    ├── demo_book_hindi.pdf
+    ├── demo_audio.mp3
+    └── demo_video.mp4
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🎯 Page Navigation
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+| Page | Route | Purpose |
+|------|-------|---------|
+| **Home** | `/` | Landing page with module navigation |
+| **Document Translation** | `/document` | File upload → translation workflow |
+| **Audio Localization** | `/audio` | Speech translation pipeline |
+| **Video Localization** | `/video` | Video subtitle generation |
+| **LMS Integration** | `/integration` | Enterprise platform integration demos |
+| **About** | `/about` | Project details and team information |
 
-### Code Splitting
+## 🔧 API Integration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+All pages are configured to work with the FastAPI backend:
 
-### Analyzing the Bundle Size
+- **Base URL**: `${process.env.REACT_APP_API_URL}` (configurable)
+- **Supported Languages**: `/supported-languages`
+- **Document APIs**: `/content/upload`, `/detect-language`, `/translate`
+- **Audio APIs**: `/speech/translate`, `/speech/download/{filename}`
+- **Video APIs**: `/video/localize`, `/video/download/{filename}`
+- **Integration APIs**: `/integration/upload`, `/integration/status`, `/integration/download/{job_id}/{language}/{filename}`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🎨 Design System
 
-### Making a Progressive Web App
+### Colors
+- **Primary**: Skill India Blue (`#004aad`)
+- **Background**: White
+- **Cards**: Light gray (`bg-gray-50`)
+- **Text**: Gray scale
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Typography
+- **Primary Font**: Poppins (headings, UI elements)
+- **Secondary Font**: Inter (body text)
+- **Weights**: 400 (regular), 700 (bold)
 
-### Advanced Configuration
+## 🧪 Testing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Manual Testing Flow
+1. **Home** → Verify navigation buttons work
+2. **Document** → Upload file → Detect language → Translate
+3. **Audio** → Upload audio → Select target language → Generate translated audio
+4. **Video** → Upload video → Generate subtitles → Download
+5. **Integration** → Upload file → Check status → Download result
+6. **About** → Verify project information and supported languages
 
-### Deployment
+### Demo Files
+Use the files in `/public/demo-assets/` for testing:
+- PDF documents for document translation
+- Audio/video files for media processing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 👥 Team SafeHorizon
 
-### `npm run build` fails to minify
+**Smart India Hackathon 2025**  
+Empowering multilingual communication across India through AI-powered localization technology.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+**🎯 Evaluator Flow**
+1. Home → Introduction and navigation
+2. Document → File upload and translation demo
+3. Audio → Audio localization workflow
+4. Video → Video subtitle generation
+5. Integration → API integration demonstrations
+6. About → Project context and technical details
+
+**Built for evaluators and learning institutions across India** 🇮🇳
