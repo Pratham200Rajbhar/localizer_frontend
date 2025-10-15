@@ -16,6 +16,8 @@ function DocumentTranslation() {
   const [error, setError] = useState('');
   const [confidence, setConfidence] = useState(0);
   const [supportedLanguages, setSupportedLanguages] = useState(DEFAULT_LANGUAGES);
+  const [fileId, setFileId] = useState(null); // Store the uploaded file ID
+  const [textMetadata, setTextMetadata] = useState(null); // Store text metadata
 
   // Load supported languages from API
   useEffect(() => {
@@ -58,46 +60,95 @@ function DocumentTranslation() {
     setOriginalText('');
     setTranslatedText('');
     setConfidence(0);
+    setFileId(null);
+    setTextMetadata(null);
 
     // Upload file and detect language
     await handleUploadAndDetect(file);
   };
 
-  // Upload file to backend and detect language
+  // Upload file and detect language
   const handleUploadAndDetect = async (file) => {
     setIsDetecting(true);
     setError('');
 
     try {
-      let textContent = '';
+      console.log(`Uploading ${file.name} for text extraction...`);
       
-      // For text files, read content directly for faster processing
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-        try {
-          textContent = await file.text();
-        } catch (textError) {
-          console.warn('Failed to read text file directly, using backend:', textError);
-          // Fallback to backend processing
-          const uploadResponse = await apiService.uploadContent(file);
-          textContent = uploadResponse.content || uploadResponse.text || '';
-        }
+      // Use the new /content/upload endpoint with text extraction
+      const uploadResponse = await apiService.uploadFile(file, 'general', 'auto');
+      
+      console.log('Upload response:', uploadResponse);
+      
+      // Store file ID for translation
+      if (uploadResponse.id) {
+        setFileId(uploadResponse.id);
+        console.log('File ID set:', uploadResponse.id);
       } else {
-        // For PDF, DOCX, and other files, always use backend processing
-        const uploadResponse = await apiService.uploadContent(file);
-        textContent = uploadResponse.content || uploadResponse.text || '';
+        console.warn('No file ID in upload response');
+      }
+      
+      // Extract text from the new API response format
+      let textContent = '';
+      if (uploadResponse.extracted_text) {
+        textContent = uploadResponse.extracted_text;
+        console.log('Text extracted, length:', textContent.length);
+      } else if (uploadResponse.content) {
+        textContent = uploadResponse.content;
+        console.log('Text from content field, length:', textContent.length);
+      } else {
+        // Fallback for text files - try reading directly
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+          try {
+            textContent = await file.text();
+            console.log('Text file read directly, length:', textContent.length);
+          } catch (textError) {
+            console.warn('Failed to read text file directly:', textError);
+          }
+        }
+      }
+      
+      // Store text metadata if available
+      if (uploadResponse.text_metadata) {
+        setTextMetadata(uploadResponse.text_metadata);
+        console.log('Text metadata:', uploadResponse.text_metadata);
+      }
+      
+      // Check extraction status
+      if (uploadResponse.extraction_status === 'failed') {
+        throw new Error('Text extraction failed. The file might be corrupted or in an unsupported format.');
       }
       
       if (!textContent || textContent.trim() === '') {
         throw new Error('Could not extract text content from file. Please ensure the file contains readable text.');
       }
       
+      console.log('Detecting language for text of length:', textContent.length);
+      
       // Detect language
       const detectionResponse = await apiService.detectLanguage({ text: textContent });
       
-      setDetectedLanguage(detectionResponse.detected_language);
+      console.log('Language detected:', detectionResponse.detected_language, 'Confidence:', detectionResponse.confidence);
+      
+      // Ensure we have a valid language code for translation
+      let detectedLang = detectionResponse.detected_language;
+      if (!detectedLang || detectedLang === 'auto') {
+        detectedLang = 'en'; // Default to English if detection fails or returns 'auto'
+      }
+      
+      setDetectedLanguage(detectedLang);
       setOriginalText(textContent);
       setConfidence(detectionResponse.confidence * 100);
+      
+      console.log('Upload and detection completed:', {
+        fileId: uploadResponse.id,
+        textLength: textContent.length,
+        detectedLanguage: detectedLang,
+        originalDetectedLanguage: detectionResponse.detected_language,
+        confidence: detectionResponse.confidence
+      });
     } catch (err) {
+      console.error('Upload/Detection error:', err);
       setError('Failed to upload or detect language: ' + (err.response?.data?.detail || err.message));
     } finally {
       setIsDetecting(false);
@@ -106,8 +157,8 @@ function DocumentTranslation() {
 
   // Handle translation
   const handleTranslate = async () => {
-    if (!originalText || !targetLanguage) {
-      setError('Please select a file and target language');
+    if ((!originalText && !fileId) || !targetLanguage) {
+      setError('Please upload a file and select target language');
       return;
     }
 
@@ -116,21 +167,56 @@ function DocumentTranslation() {
     setTranslatedText('');
 
     try {
-      const result = await apiService.translateText({
-        text: originalText,
-        source_language: detectedLanguage,
-        target_languages: [targetLanguage],
-        domain: 'general',
-        apply_localization: true
+      console.log('Starting translation...', { 
+        fileId, 
+        targetLanguage, 
+        detectedLanguage, 
+        originalText: originalText ? `present (${originalText.length} chars)` : 'missing',
+        hasFileId: !!fileId,
+        hasOriginalText: !!originalText
       });
+      
+      // Use file_id if available, otherwise use text
+      let translationParams;
+      if (fileId) {
+        translationParams = {
+          file_id: fileId,
+          source_language: detectedLanguage || 'en', // Use detected language or default to 'en'
+          target_languages: [targetLanguage],
+          domain: 'general',
+          apply_localization: true
+        };
+        console.log('Using file_id for translation:', fileId, 'with source language:', detectedLanguage || 'en');
+        console.log('Translation params:', translationParams);
+      } else if (originalText) {
+        translationParams = {
+          text: originalText,
+          source_language: detectedLanguage || 'en', // Use detected language or default to 'en'
+          target_languages: [targetLanguage],
+          domain: 'general',
+          apply_localization: true
+        };
+        console.log('Using text for translation, length:', originalText.length, 'with source language:', detectedLanguage || 'en');
+        console.log('Translation params:', translationParams);
+      } else {
+        console.error('No file ID or text content available for translation');
+        throw new Error('No file ID or text content available for translation');
+      }
+
+      const result = await apiService.translateText(translationParams);
+      
+      console.log('Translation result:', result);
 
       // Get the translated text from the first result
       if (result.results && result.results.length > 0) {
         setTranslatedText(result.results[0].translated_text);
+      } else if (result.translated_text) {
+        setTranslatedText(result.translated_text);
       } else {
-        setTranslatedText(result.translated_text || 'Translation completed');
+        setTranslatedText('Translation completed successfully');
       }
     } catch (err) {
+      console.error('Translation error:', err);
       setError('Failed to translate: ' + (err.response?.data?.detail || err.message));
     } finally {
       setIsTranslating(false);
@@ -159,75 +245,24 @@ function DocumentTranslation() {
     }
   };
 
-  // Load demo file
-  const loadDemoFile = async () => {
-    try {
-      // Create a demo text file
-      const demoText = 'Welcome to the AI-powered multilingual content localization engine. This system can translate documents across 22 Indian languages with high accuracy. Our advanced AI models ensure context-aware translations that preserve the original meaning and tone.';
-      const blob = new Blob([demoText], { type: 'text/plain' });
-      const demoFile = new File([blob], 'demo_document.txt', { type: 'text/plain' });
-      
-      setSelectedFile(demoFile);
-      setError('');
-      
-      // Upload and detect language for demo file
-      await handleUploadAndDetect(demoFile);
-    } catch (err) {
-      setError('Failed to load demo file: ' + err.message);
-    }
-  };
 
-  // Load test file (simulating PDF)
-  const loadTestFile = async () => {
-    try {
-      // Fetch the test document from public folder
-      const response = await fetch('/demo-assets/test_document.txt');
-      const testText = await response.text();
-      
-      // Create a file object that simulates a PDF
-      const blob = new Blob([testText], { type: 'application/pdf' });
-      const testFile = new File([blob], 'test_document.pdf', { type: 'application/pdf' });
-      
-      setSelectedFile(testFile);
-      setError('');
-      
-      // Upload and detect language for test file
-      await handleUploadAndDetect(testFile);
-    } catch (err) {
-      setError('Failed to load test file: ' + err.message);
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="relative min-h-screen bg-gray-50">
+      <div className="container py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             AI Document Translation
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto text-balance">
             Upload documents and get accurate translations in multiple Indian languages
           </p>
-          <div className="mt-6 flex gap-4 justify-center">
-            <button
-              onClick={loadDemoFile}
-              className="bg-skillBlue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Load Demo Document
-            </button>
-            <button
-              onClick={loadTestFile}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Load Test PDF
-            </button>
-          </div>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center">
               <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
               <span className="text-red-700">{error}</span>
@@ -239,21 +274,21 @@ function DocumentTranslation() {
         <div className="flex justify-center mb-12">
           <div className="flex items-center space-x-8">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-skillBlue text-white rounded-full flex items-center justify-center font-bold">
+              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-md">
                 1
               </div>
               <span className="ml-3 text-gray-700 font-medium">Upload Document</span>
             </div>
             <div className="w-8 h-1 bg-gray-300"></div>
             <div className="flex items-center">
-              <div className={`w-10 h-10 ${detectedLanguage ? 'bg-skillBlue text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold`}>
+              <div className={`w-10 h-10 ${detectedLanguage ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold shadow-md`}>
                 2
               </div>
               <span className="ml-3 text-gray-700 font-medium">Detect Language</span>
             </div>
             <div className="w-8 h-1 bg-gray-300"></div>
             <div className="flex items-center">
-              <div className={`w-10 h-10 ${translatedText ? 'bg-skillBlue text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold`}>
+              <div className={`w-10 h-10 ${translatedText ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold shadow-md`}>
                 3
               </div>
               <span className="ml-3 text-gray-700 font-medium">Translate</span>
@@ -263,14 +298,14 @@ function DocumentTranslation() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Upload className="mr-3 text-skillBlue" />
+              <Upload className="mr-3 text-blue-600" />
               Upload Document
             </h2>
 
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-skillBlue transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
               <input
                 type="file"
                 onChange={handleFileChange}
@@ -291,9 +326,10 @@ function DocumentTranslation() {
                   Supports: TXT, PDF, DOCX, DOC, RTF (Max 100MB)
                 </p>
                 <div className="text-sm text-gray-400">
-                  <p>• PDF files: Full text extraction and translation</p>
-                  <p>• Word documents: Complete document processing</p>
-                  <p>• Text files: Direct processing for faster results</p>
+                  <p>• PDF files: Advanced text extraction with metadata</p>
+                  <p>• Word documents: Complete DOCX/DOC processing</p>
+                  <p>• Text files: Direct processing with encoding detection</p>
+                  <p>• All formats: Automatic language detection</p>
                 </div>
               </label>
             </div>
@@ -305,8 +341,19 @@ function DocumentTranslation() {
                   <div>
                     <p className="font-medium text-gray-800">{selectedFile.name}</p>
                     <p className="text-sm text-gray-500">
-                      Type: {selectedFile.type || 'Unknown'} | Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      Type: {selectedFile.type || 'Unknown'} | Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB{fileId ? ` | ID: ${fileId}` : ''}
                     </p>
+                     {textMetadata && (
+                       <div className="mt-2 text-xs text-gray-500">
+                         <p>Words: {textMetadata.word_count} | Characters: {textMetadata.char_count}</p>
+                         {textMetadata.pages && <p>Pages: {textMetadata.pages}</p>}
+                         {textMetadata.format && <p>Format: {textMetadata.format.toUpperCase()}</p>}
+                       </div>
+                     )}
+                     {/* Debug info */}
+                     <div className="mt-2 text-xs text-gray-400">
+                       <p>Debug: FileID={fileId ? 'Yes' : 'No'} | Text={originalText ? 'Yes' : 'No'} | SourceLang={detectedLanguage || 'None'}</p>
+                     </div>
                     {detectedLanguage && (
                       <div className="mt-2">
                         <div className="flex items-center">
@@ -322,7 +369,13 @@ function DocumentTranslation() {
                     <div className="flex items-center">
                       <Loader className="w-5 h-5 text-skillBlue animate-spin mr-2" />
                       <span className="text-sm text-gray-600">
-                        {selectedFile.type === 'text/plain' ? 'Reading file...' : 'Processing with backend...'}
+                        {(() => {
+                          const ext = selectedFile.name.split('.').pop().toLowerCase();
+                          return ext === 'txt' ? 'Reading text file...' : 
+                                 ext === 'pdf' ? 'Extracting PDF text...' :
+                                 ext === 'docx' || ext === 'doc' ? 'Processing Word document...' :
+                                 'Processing document...';
+                        })()}
                       </span>
                     </div>
                   )}
@@ -355,11 +408,11 @@ function DocumentTranslation() {
             </div>
 
             {/* Translate Button */}
-            <button
-              onClick={handleTranslate}
-              disabled={!originalText || !targetLanguage || isTranslating}
-              className="w-full mt-6 bg-skillBlue text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-            >
+              <button
+                onClick={handleTranslate}
+                disabled={(!originalText && !fileId) || !targetLanguage || isTranslating}
+                className="w-full mt-6 bg-skillBlue text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              >
               {isTranslating ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin mr-2" />
@@ -375,7 +428,7 @@ function DocumentTranslation() {
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               Translation Results
             </h2>
@@ -416,7 +469,7 @@ function DocumentTranslation() {
             {/* Loading State */}
             {isTranslating && (
               <div className="text-center py-12">
-                <Loader className="w-8 h-8 text-skillBlue animate-spin mx-auto mb-4" />
+                <Loader className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
                 <p className="text-gray-600">Translating your document...</p>
               </div>
             )}

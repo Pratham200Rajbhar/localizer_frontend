@@ -9,9 +9,6 @@ module.exports = {
         poppins: ["Poppins", "sans-serif"],
         inter: ["Inter", "sans-serif"],
       },
-      colors: {
-        skillBlue: '#004aad',
-      },
     },
   },
   plugins: [],

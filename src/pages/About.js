@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Users, Code, Globe, Zap, Shield, Award, Target } from 'lucide-react';
+import { Users, Code, Globe, Zap, Shield, Award, Target } from 'lucide-react';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
 
 export default function About() {
@@ -17,46 +17,29 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-100">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <button 
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-skillBlue transition-colors"
-            >
-              <Home className="w-5 h-5" />
-              <span>Back to Home</span>
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">About Our Project</h1>
-            <div className="w-24"></div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-skillBlue to-indigo-600 rounded-2xl mb-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-lg mb-4">
             <Award className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-skillBlue via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold text-gray-800 mb-3">
             Team SafeHorizon
           </h1>
-          <p className="text-xl text-gray-600 mb-2">Smart India Hackathon 2025</p>
-          <p className="text-lg text-gray-500">Problem Statement ID: 25203</p>
+          <p className="text-lg text-gray-600 mb-2">Smart India Hackathon 2025</p>
+          <p className="text-md text-gray-500">Problem Statement ID: 25203</p>
         </div>
 
         {/* Problem Statement */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-gray-200 shadow-lg">
-          <div className="flex items-center mb-6">
-            <Target className="w-8 h-8 text-skillBlue mr-4" />
-            <h2 className="text-3xl font-bold text-gray-900">Problem Statement</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center mb-4">
+            <Target className="w-6 h-6 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold text-gray-800">Problem Statement</h2>
           </div>
-          <div className="bg-gradient-to-r from-skillBlue to-indigo-600 text-white rounded-2xl p-6">
-            <h3 className="text-xl font-semibold mb-3">AI-Powered Multilingual Content Localization Engine</h3>
-            <p className="text-lg opacity-95">
+          <div className="bg-blue-600 text-white rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-2">AI-Powered Multilingual Content Localization Engine</h3>
+            <p className="text-sm">
               Develop an AI-powered solution that can automatically translate and localize content 
               across multiple Indian languages while preserving cultural context and domain-specific terminology.
             </p>
@@ -64,73 +47,73 @@ export default function About() {
         </div>
 
         {/* Solution Features */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-gray-200 shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Solution</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Our Solution</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {solutions.map((solution, index) => (
-              <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center mb-4">
-                  <div className="p-3 bg-skillBlue text-white rounded-xl mr-4">
+              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center mb-3">
+                  <div className="p-2 bg-blue-600 text-white rounded-lg mr-3">
                     {solution.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{solution.title}</h3>
+                  <h3 className="text-lg font-bold text-gray-800">{solution.title}</h3>
                 </div>
-                <p className="text-gray-600 leading-relaxed">{solution.desc}</p>
+                <p className="text-gray-600 text-sm">{solution.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Supported Languages */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-gray-200 shadow-lg">
-          <div className="flex items-center justify-center mb-8">
-            <Globe className="w-8 h-8 text-skillBlue mr-4" />
-            <h2 className="text-3xl font-bold text-gray-900">Supported Languages</h2>
-            <span className="ml-4 bg-skillBlue text-white px-4 py-2 rounded-full font-semibold">
-              {languages.length} Languages
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center justify-center mb-4">
+            <Globe className="w-6 h-6 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold text-gray-800">Supported Languages</h2>
+            <span className="ml-3 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              {languages.length}
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {languages.map(([code, name]) => (
-              <div key={code} className="flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                <span className="font-mono text-sm bg-skillBlue text-white px-3 py-1 rounded-lg mr-3">{code}</span>
-                <span className="font-medium text-gray-800">{name}</span>
+              <div key={code} className="flex items-center bg-blue-50 rounded-lg p-3 border border-blue-100">
+                <span className="font-mono text-xs bg-blue-600 text-white px-2 py-1 rounded mr-2">{code}</span>
+                <span className="text-sm text-gray-700">{name}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Tech Stack */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-gray-200 shadow-lg">
-          <div className="flex items-center justify-center mb-8">
-            <Code className="w-8 h-8 text-skillBlue mr-4" />
-            <h2 className="text-3xl font-bold text-gray-900">Technology Stack</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center justify-center mb-4">
+            <Code className="w-6 h-6 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold text-gray-800">Technology Stack</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Globe className="w-6 h-6 text-blue-600 mr-2" />
-                Frontend Technologies
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                <Globe className="w-5 h-5 text-blue-600 mr-2" />
+                Frontend
               </h3>
-              <div className="space-y-3">
-                {['React.js with Hooks', 'TailwindCSS for styling', 'Component-based design', 'React Router DOM', 'Lucide React icons'].map((tech, index) => (
+              <div className="space-y-2">
+                {['React.js', 'TailwindCSS', 'React Router', 'Lucide Icons'].map((tech, index) => (
                   <div key={index} className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                    <span className="text-gray-700">{tech}</span>
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
+                    <span className="text-sm text-gray-700">{tech}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <Zap className="w-6 h-6 text-purple-600 mr-2" />
-                Demo Technologies
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                <Zap className="w-5 h-5 text-purple-600 mr-2" />
+                Backend (Demo)
               </h3>
-              <div className="space-y-3">
-                {['Static frontend demonstration', 'Simulated AI processing', 'Sample multilingual content', 'Interactive user workflows', 'Educational showcasing'].map((tech, index) => (
+              <div className="space-y-2">
+                {['FastAPI', 'Whisper AI', 'IndicTrans2', 'AI Processing'].map((tech, index) => (
                   <div key={index} className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
-                    <span className="text-gray-700">{tech}</span>
+                    <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mr-2"></div>
+                    <span className="text-sm text-gray-700">{tech}</span>
                   </div>
                 ))}
               </div>
@@ -139,26 +122,24 @@ export default function About() {
         </div>
 
         {/* Team Section */}
-        <div className="bg-gradient-to-r from-skillBlue via-indigo-600 to-purple-600 rounded-3xl p-12 text-center text-white shadow-2xl">
-          <div className="flex items-center justify-center mb-6">
-            <Users className="w-12 h-12 mr-4" />
-            <h2 className="text-4xl font-bold">Team SafeHorizon</h2>
+        <div className="bg-blue-600 rounded-lg p-8 text-center text-white shadow-md">
+          <div className="flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 mr-3" />
+            <h2 className="text-3xl font-bold">Team SafeHorizon</h2>
           </div>
-          <p className="text-xl mb-6 opacity-95">
-            Empowering multilingual communication across India through AI-powered localization technology
+          <p className="text-lg mb-4">
+            Empowering multilingual communication across India through AI-powered localization
           </p>
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
-            <p className="text-lg font-medium mb-2">Built for Smart India Hackathon 2025</p>
-            <p className="opacity-90">Designed for evaluators and learning institutions across India 🇮🇳</p>
+          <div className="bg-white/20 rounded-lg p-4 mb-6">
+            <p className="font-medium mb-1">Smart India Hackathon 2025</p>
+            <p className="text-sm opacity-90">For evaluators and learning institutions across India 🇮🇳</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={() => navigate('/')} 
-              className="bg-white text-skillBlue px-8 py-4 rounded-2xl font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:scale-105"
-            >
-              Explore Our Platform
-            </button>
-          </div>
+          <button 
+            onClick={() => navigate('/')} 
+            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Explore Platform
+          </button>
         </div>
       </div>
     </div>

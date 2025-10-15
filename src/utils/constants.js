@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  BASE_URL: process.env.REACT_APP_API_URL || 'https://api.safehorizon.com',
   TIMEOUT: 0, // No timeout for audio processing
   MAX_FILE_SIZE: 500 * 1024 * 1024, // 500MB for audio files
   SUPPORTED_FORMATS: {
@@ -45,16 +45,9 @@ export const DEFAULT_LANGUAGES = [
   { code: 'ur', name: 'Urdu' }
 ];
 
-// Demo text samples for different languages
-export const DEMO_TEXTS = {
-  english: "This is a sample document for translation. It demonstrates the AI-powered multilingual content localization engine.",
-  hindi: "यह अनुवाद के लिए एक नमूना दस्तावेज़ है। यह AI-संचालित बहुभाषी सामग्री स्थानीयकरण इंजन का प्रदर्शन करता है।",
-  bengali: "এটি অনুবাদের জন্য একটি নমুনা নথি। এটি AI-চালিত বহুভাষিক বিষয়বস্তু স্থানীয়করণ ইঞ্জিন প্রদর্শন করে।",
-  tamil: "இது மொழிபெயர்ப்பிற்கான மாதிரி ஆவணம். இது AI-இயங்கும் பன்மொழி உள்ளடக்க உள்ளூர்மயமாக்கல் இயந்திரத்தை நிரூபிக்கிறது।"
-};
 
-// Platform integration demo data
-export const DEMO_PLATFORMS = [
+// Platform integration data
+export const SUPPORTED_PLATFORMS = [
   { id: 'ncvet', name: 'NCVET', description: 'National Council for Vocational Education and Training' },
   { id: 'msde', name: 'MSDE', description: 'Ministry of Skill Development and Entrepreneurship' },
   { id: 'lms', name: 'LMS', description: 'Learning Management System' }

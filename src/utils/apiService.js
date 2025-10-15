@@ -131,9 +131,8 @@ export const apiService = {
         apply_localization: applyLocalization
       };
     } else {
-      // New signature: translateText({ text, source_language, target_language(s), ... })
+      // New signature: translateText({ text, source_language, target_language(s), ... }) or ({ file_id, source_language, target_language(s), ... })
       payload = {
-        text: params.text,
         source_language: params.source_language,
         target_languages: Array.isArray(params.target_languages) 
           ? params.target_languages 
@@ -141,6 +140,13 @@ export const apiService = {
         domain: params.domain || 'general',
         apply_localization: params.apply_localization !== undefined ? params.apply_localization : true
       };
+      
+      // Add either text or file_id based on what's provided
+      if (params.file_id) {
+        payload.file_id = params.file_id;
+      } else if (params.text) {
+        payload.text = params.text;
+      }
     }
     
     const response = await api.post('/translate', payload);
@@ -285,12 +291,14 @@ export const apiService = {
   },
 
   // Video Processing
-  async localizeVideo(videoFile, targetLanguage, domain = 'general', includeSubtitles = true, includeDubbedAudio = false) {
+  async localizeVideo(videoFile, targetLanguage, domain = 'general', includeSubtitles = true, includeDubbedAudio = false, subtitleTargetLanguage = null) {
     const formData = createFormData(videoFile, {
       target_language: targetLanguage,
       domain,
       include_subtitles: includeSubtitles,
-      include_dubbed_audio: includeDubbedAudio
+      include_dubbed_audio: includeDubbedAudio,
+      // Add subtitle target language if specified
+      ...(subtitleTargetLanguage && { subtitle_target_language: subtitleTargetLanguage })
     });
     
     const response = await api.post('/video/localize', formData, {
@@ -496,7 +504,7 @@ export const fileUtils = {
     }
   },
 
-  // Additional API endpoints for testing
+  // Additional API endpoints
   async getPerformanceMetrics() {
     const response = await api.get('/performance');
     return response.data;

@@ -1,37 +1,20 @@
 import React, { useState } from 'react';
-import { Building2, Upload, Download, Code, CheckCircle, Home, Terminal, Database, AlertCircle, Loader } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { DEMO_PLATFORMS } from '../utils/constants';
+import { Building2, Upload, Download, CheckCircle, Terminal, Database, AlertCircle, Loader } from 'lucide-react';
+import { SUPPORTED_PLATFORMS } from '../utils/constants';
 import { apiService } from '../utils/apiService';
 
 export default function Integration() {
-  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [platform, setPlatform] = useState('NCVET');
   const [targetLang, setTargetLang] = useState('hi');
   const [uploadResult, setUploadResult] = useState(null);
   const [statusResult, setStatusResult] = useState(null);
   const [downloadResult, setDownloadResult] = useState(null);
-  const [filename] = useState('demo_book_hindi.pdf');
   const [isUploading, setIsUploading] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState('');
 
-  // Load demo file
-  const loadDemoFile = async () => {
-    try {
-      // Create a demo file
-      const demoText = "This is a demo document for LMS integration testing. The content will be translated and processed through the integration pipeline.";
-      const blob = new Blob([demoText], { type: 'text/plain' });
-      const demoFile = new File([blob], 'demo_book.txt', { type: 'text/plain' });
-      
-      setFile(demoFile);
-      setError('');
-    } catch (err) {
-      setError('Failed to load demo file: ' + err.message);
-    }
-  };
 
   // Handle file upload for integration
   const handleFileUpload = (e) => {
@@ -103,7 +86,6 @@ export default function Integration() {
 
     try {
       const downloadFilename = `${uploadResult.job_id}_${targetLang}.txt`;
-      const partnerId = `${platform.toLowerCase()}_partner_123`;
       
       const response = await apiService.downloadIntegrationOutput(uploadResult.job_id, targetLang, downloadFilename);
       
@@ -132,12 +114,12 @@ export default function Integration() {
 
   // Generate CURL command
   const generateCurlCommand = (action) => {
-    const baseUrl = "http://localhost:8000";
+    const baseUrl = process.env.REACT_APP_API_URL || 'https://api.safehorizon.com';
     
     switch (action) {
       case 'upload':
         return `curl -X POST ${baseUrl}/integration/upload \\
-  -F "file=@demo_book_hindi.pdf" \\
+  -F "file=@document.pdf" \\
   -F "target_language=hi" \\
   -F "partner=NCVET"`;
       
@@ -146,9 +128,9 @@ export default function Integration() {
   -H "Content-Type: application/json"`;
       
       case 'download':
-        return `curl -X GET "${baseUrl}/integration/download/NCVET_1234/hi/demo_book_hindi.pdf" \\
+        return `curl -X GET "${baseUrl}/integration/download/NCVET_1234/hi/document.pdf" \\
   -H "Accept: application/octet-stream" \\
-  --output demo_book_hindi.pdf`;
+  --output document.pdf`;
       
       default:
         return '';
@@ -156,61 +138,39 @@ export default function Integration() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-100">
-      {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <button 
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-skillBlue transition-colors"
-            >
-              <Home className="w-5 h-5" />
-              <span>Back to Home</span>
-            </button>
-            <div className="text-skillBlue font-bold text-lg">Enterprise Integration</div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-600 rounded-lg mb-4">
+            <Building2 className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-3">
             LMS / NCVET / MSDE Integration
           </h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-            Seamless API integration with enterprise platforms for automated content localization
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            API integration with enterprise platforms for automated content localization
           </p>
-          <div className="mt-6">
-            <button
-              onClick={loadDemoFile}
-              className="bg-skillBlue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Load Demo File
-            </button>
-          </div>
         </div>
 
         {/* Platform Selection & File Upload */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <Building2 className="w-6 h-6 text-orange-600 mr-2" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
               Platform Configuration
             </h2>
 
             {/* Platform Selection */}
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Target Platform
               </label>
               <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-orange-600"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
-                {DEMO_PLATFORMS.map(platform => (
+                {SUPPORTED_PLATFORMS.map(platform => (
                   <option key={platform.id} value={platform.id.toUpperCase()}>
                     {platform.name} - {platform.description}
                   </option>
@@ -219,14 +179,14 @@ export default function Integration() {
             </div>
 
             {/* Language Selection */}
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Target Language
               </label>
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-orange-600"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="hi">Hindi (hi)</option>
                 <option value="bn">Bengali (bn)</option>
@@ -237,9 +197,9 @@ export default function Integration() {
             </div>
 
             {/* File Upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-600 transition-colors">
-              <Database className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-3">Upload content for platform integration</p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-600 transition-colors">
+              <Database className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-600 mb-2">Upload content for integration</p>
               <input
                 type="file"
                 accept=".pdf,.docx,.txt"
@@ -256,9 +216,9 @@ export default function Integration() {
             </div>
 
             {file && (
-              <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+              <div className="mt-3 p-2 bg-orange-50 rounded-lg">
                 <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
                   <span className="text-sm font-medium">{file.name}</span>
                 </div>
               </div>
@@ -266,37 +226,36 @@ export default function Integration() {
           </div>
 
           {/* API Demonstration */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <Terminal className="w-6 h-6 text-orange-600 mr-2" />
-              API Integration Demo
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              API Integration
             </h2>
 
             {/* Error Display */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-center">
-                  <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-                  <span className="text-red-700">{error}</span>
+                  <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+                  <span className="text-red-700 text-sm">{error}</span>
                 </div>
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Upload Demo */}
+            <div className="space-y-3">
+              {/* Upload Example */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Upload to Platform</h3>
-                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">1. Upload to Platform</h3>
+                <div className="bg-gray-900 text-green-400 p-2 rounded text-xs font-mono mb-2 overflow-x-auto">
                   {generateCurlCommand('upload')}
                 </div>
                 <button
                   onClick={handleUpload}
                   disabled={!file || isUploading}
-                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  className="w-full bg-orange-600 text-white py-2 px-3 rounded hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-sm"
                 >
                   {isUploading ? (
                     <>
-                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      <Loader className="w-4 h-4 animate-spin mr-2" />
                       Uploading...
                     </>
                   ) : (
@@ -305,20 +264,20 @@ export default function Integration() {
                 </button>
               </div>
 
-              {/* Status Demo */}
+              {/* Status Example */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">2. Check Status</h3>
-                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">2. Check Status</h3>
+                <div className="bg-gray-900 text-green-400 p-2 rounded text-xs font-mono mb-2 overflow-x-auto">
                   {generateCurlCommand('status')}
                 </div>
                 <button
                   onClick={handleCheckStatus}
                   disabled={isCheckingStatus}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors flex items-center justify-center"
+                  className="w-full bg-blue-600 text-white py-2 px-3 rounded hover:bg-blue-700 disabled:bg-gray-300 transition-colors flex items-center justify-center text-sm"
                 >
                   {isCheckingStatus ? (
                     <>
-                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      <Loader className="w-4 h-4 animate-spin mr-2" />
                       Checking...
                     </>
                   ) : (
@@ -327,20 +286,20 @@ export default function Integration() {
                 </button>
               </div>
 
-              {/* Download Demo */}
+              {/* Download Example */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">3. Download Result</h3>
-                <div className="bg-gray-900 text-green-400 p-3 rounded-lg text-sm font-mono mb-3 overflow-x-auto">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">3. Download Result</h3>
+                <div className="bg-gray-900 text-green-400 p-2 rounded text-xs font-mono mb-2 overflow-x-auto">
                   {generateCurlCommand('download')}
                 </div>
                 <button
                   onClick={handleDownload}
                   disabled={isDownloading}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 transition-colors flex items-center justify-center"
+                  className="w-full bg-green-600 text-white py-2 px-3 rounded hover:bg-green-700 disabled:bg-gray-300 transition-colors flex items-center justify-center text-sm"
                 >
                   {isDownloading ? (
                     <>
-                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      <Loader className="w-4 h-4 animate-spin mr-2" />
                       Downloading...
                     </>
                   ) : (
@@ -353,15 +312,14 @@ export default function Integration() {
         </div>
 
         {/* API Response Display */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Upload Response */}
           {uploadResult && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <Upload className="w-5 h-5 text-orange-600 mr-2" />
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-md font-bold text-gray-800 mb-3">
                 Upload Response
               </h3>
-              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
 {JSON.stringify(uploadResult, null, 2)}
               </pre>
             </div>
@@ -369,12 +327,11 @@ export default function Integration() {
 
           {/* Status Response */}
           {statusResult && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <Code className="w-5 h-5 text-blue-600 mr-2" />
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-md font-bold text-gray-800 mb-3">
                 Status Response
               </h3>
-              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
 {JSON.stringify(statusResult, null, 2)}
               </pre>
             </div>
@@ -382,12 +339,11 @@ export default function Integration() {
 
           {/* Download Response */}
           {downloadResult && (
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <Download className="w-5 h-5 text-green-600 mr-2" />
+            <div className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-md font-bold text-gray-800 mb-3">
                 Download Response
               </h3>
-              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+              <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
 {JSON.stringify(downloadResult, null, 2)}
               </pre>
             </div>
@@ -395,52 +351,41 @@ export default function Integration() {
         </div>
 
         {/* Integration Flow Explanation */}
-        <div className="mt-12 bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Integration Workflow</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Integration Workflow</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Upload className="w-8 h-8 text-orange-600" />
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Upload className="w-6 h-6 text-orange-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">1. Upload Content</h3>
-              <p className="text-gray-600">
-                Send educational content to the platform with localization requirements
+              <h3 className="text-md font-semibold text-gray-800 mb-2">1. Upload</h3>
+              <p className="text-gray-600 text-sm">
+                Send content to platform
               </p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Terminal className="w-8 h-8 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Terminal className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">2. Monitor Progress</h3>
-              <p className="text-gray-600">
-                Track processing status and receive real-time updates on localization progress
+              <h3 className="text-md font-semibold text-gray-800 mb-2">2. Monitor</h3>
+              <p className="text-gray-600 text-sm">
+                Track processing status
               </p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="w-8 h-8 text-green-600" />
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Download className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">3. Retrieve Results</h3>
-              <p className="text-gray-600">
-                Download localized content ready for deployment on target platforms
+              <h3 className="text-md font-semibold text-gray-800 mb-2">3. Download</h3>
+              <p className="text-gray-600 text-sm">
+                Retrieve localized content
               </p>
             </div>
           </div>
         </div>
 
-        {/* Backend Integration Notice */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-blue-600 mr-2" />
-            <p className="text-blue-800">
-              <strong>Live Backend Integration:</strong> This page connects to the FastAPI backend at{' '}
-              <code className="bg-blue-100 px-2 py-1 rounded">http://localhost:8000</code>. 
-              Make sure your backend server is running for full functionality.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
