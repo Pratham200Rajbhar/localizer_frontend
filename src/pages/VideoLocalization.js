@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Video, Upload, Download, Languages, Play, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Video, Upload, Download, Languages, Play, CheckCircle, AlertCircle, ArrowLeft, Globe, Zap, Loader } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
 import { apiService, fileUtils } from '../utils/apiService';
 
-export default function VideoLocalization() {
+const VideoLocalization = () => {
   const [file, setFile] = useState(null);
   const [targetLang, setTargetLang] = useState('');
   const [result, setResult] = useState(null);
@@ -280,67 +281,97 @@ export default function VideoLocalization() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-lg mb-4">
-            <Video className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="btn-secondary inline-flex items-center gap-2">
+              <ArrowLeft size={20} />
+              Back to Home
+            </Link>
+            <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg">
+              <Video size={16} className="mr-2" />
+              Video Localization
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">
-            Video Localization
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Generate accurate subtitles and localized content for video files
-          </p>
+          
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-6">
+              AI-Powered Video Localization
+            </h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Generate accurate subtitles, translate content, and create professional localized videos with advanced AI technology
+            </p>
+            
+            {/* Features badges */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="bg-green-50 text-green-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Video size={16} className="mr-2" />
+                HD Video Processing
+              </div>
+              <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Zap size={16} className="mr-2" />
+                Subtitle Generation
+              </div>
+              <div className="bg-purple-50 text-purple-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Globe size={16} className="mr-2" />
+                Multi-language Support
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="container py-12">
         {/* Error Display */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-              <span className="text-red-700">{error}</span>
+              <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+              <span className="text-red-700 font-medium">{error}</span>
             </div>
           </div>
         )}
 
         {/* Process Flow */}
-        <div className="flex justify-center mb-6">
-          <div className="flex items-center space-x-6">
-            {[
-              { num: 1, title: 'Upload', icon: Upload },
-              { num: 2, title: 'Language', icon: Languages },
-              { num: 3, title: 'Process', icon: Video },
-              { num: 4, title: 'Download', icon: Download }
-            ].map(({ num, title, icon: Icon }, index) => (
-              <div key={num} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
-                    step >= num ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    <Icon className="w-5 h-5" />
+        <div className="mb-12">
+          <div className="flex items-center justify-center max-w-5xl mx-auto">
+            <div className="flex items-center space-x-4 md:space-x-8">
+              {[
+                { num: 1, title: 'Upload', icon: Upload },
+                { num: 2, title: 'Language', icon: Languages },
+                { num: 3, title: 'Process', icon: Video },
+                { num: 4, title: 'Download', icon: Download }
+              ].map(({ num, title, icon: Icon }, index) => (
+                <div key={num} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-12 h-12 ${
+                      step >= num ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
+                    } rounded-xl flex items-center justify-center font-bold shadow-lg mb-2 transition-all duration-300`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className={`text-sm font-medium ${step >= num ? 'text-green-600' : 'text-gray-500'}`}>
+                      {title}
+                    </span>
                   </div>
-                  <span className={`text-xs mt-1 ${step >= num ? 'text-green-600' : 'text-gray-500'}`}>
-                    {title}
-                  </span>
+                  {index < 3 && <div className="w-8 md:w-16 h-1 bg-gray-300 rounded-full"></div>}
                 </div>
-                {index < 3 && <div className="w-6 h-0.5 bg-gray-300 mx-2"></div>}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 flex items-center text-gray-900">
+              <Upload className="mr-3 text-green-600" size={28} />
               Upload Video File
             </h2>
             
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-600 transition-colors">
-              <Play className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-3">Drop your video file here or click to browse</p>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-500 hover:bg-green-50/30 transition-all duration-300 group">
               <input
                 type="file"
                 accept=".mp4,.avi,.mov,.webm"
@@ -350,41 +381,63 @@ export default function VideoLocalization() {
               />
               <label
                 htmlFor="video-upload"
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors cursor-pointer inline-block"
+                className="cursor-pointer flex flex-col items-center"
               >
-                Choose Video File
+                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
+                  <Play className="w-8 h-8 text-green-600" />
+                </div>
+                <p className="text-lg font-semibold text-gray-700 mb-2">
+                  Drop your video file here
+                </p>
+                <p className=" text-gray-500 mb-4">
+                  or click to browse files
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+                  <p>• MP4, AVI, MOV support</p>
+                  <p>• WebM format included</p>
+                  <p>• Maximum 500MB</p>
+                  <p>• HD quality processing</p>
+                </div>
               </label>
-              <p className="text-sm text-gray-500 mt-2">Supports: MP4, AVI, MOV, WEBM (Max 500MB)</p>
             </div>
 
             {file && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">{file.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
+              <div className="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <Video className="w-5 h-5 text-green-600 mr-2" />
+                      <p className="font-semibold text-gray-800">{file.name}</p>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">
+                      <span className="font-medium">Size:</span> {file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
                     </p>
+                    
+                    <div className="flex items-center p-3 bg-green-100 border border-green-300 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                      <span className="text-sm font-medium text-green-700">
+                        Video file ready for processing
+                      </span>
+                    </div>
                   </div>
-                  <CheckCircle className="w-4 h-4 text-green-500" />
                 </div>
               </div>
             )}
 
             {/* Language Selection */}
             {step >= 2 && (
-              <div className="mt-4">
+              <div className="mt-8 ">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Globe className="w-4 h-4 inline mr-2" />
                   Target Language for Subtitles
                 </label>
                 <select
                   value={targetLang}
                   onChange={(e) => setTargetLang(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select target language...</option>
                   {supportedLanguages.map((lang) => {
-                    // Handle both array format [code, name] and object format {code, name}
                     const code = Array.isArray(lang) ? lang[0] : lang.code;
                     const name = Array.isArray(lang) ? lang[1] : lang.name;
                     return (
@@ -398,16 +451,16 @@ export default function VideoLocalization() {
                 <button
                   onClick={handleLocalizeVideo}
                   disabled={!targetLang || isProcessing}
-                  className="w-full mt-3 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  className="btn-primary w-full mt-6"
                 >
                   {isProcessing ? (
                     <>
-                      <Clock className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      <Loader className="w-5 h-5 animate-spin mr-2" />
+                      {processingStage || 'Processing Video...'}
                     </>
                   ) : (
                     <>
-                      <Play className="w-4 h-4 mr-2" />
+                      <Video className="w-5 h-5 mr-2" />
                       Generate Subtitles
                     </>
                   )}
@@ -417,47 +470,58 @@ export default function VideoLocalization() {
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Subtitle Generation
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 text-gray-900">
+              Localization Results
             </h2>
 
             {!result && !isProcessing && (
-              <div className="text-gray-500 text-center py-8">
-                <Video className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                <p>Upload a video file and select a target language to see results</p>
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Video className="w-10 h-10 text-green-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready for Video Processing</h3>
+                <p className=" text-gray-500 max-w-sm mx-auto">
+                  Upload a video file and select a target language to generate professional subtitles
+                </p>
               </div>
             )}
 
             {isProcessing && (
-              <div className="text-center py-8">
-                <Video className="w-8 h-8 text-green-600 mx-auto mb-2 animate-pulse" />
-                <p className="text-gray-600">{processingStage}</p>
-                <p className="text-sm text-gray-500 mt-1">This may take several minutes</p>
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Loader className="w-8 h-8 text-green-600 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Processing Video</h3>
+                <p className=" text-gray-600 mb-2">{processingStage}</p>
+                <p className="text-sm text-gray-500">This may take several minutes depending on video length</p>
               </div>
             )}
 
             {result && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Video Info */}
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Video Information</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="ml-2 font-medium">{result.duration}s</span>
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Video Information
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 font-medium">Duration:</span>
+                      <span className="font-semibold text-gray-800">{result.duration}s</span>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Target Language:</span>
-                      <span className="ml-2 font-medium">{result.target_language}</span>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 font-medium">Language:</span>
+                      <span className="font-semibold text-gray-800">{result.target_language}</span>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Confidence:</span>
-                      <span className="ml-2 font-medium">{(result.confidence * 100).toFixed(1)}%</span>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 font-medium">Confidence:</span>
+                      <span className="font-semibold text-green-600">{(result.confidence * 100).toFixed(1)}%</span>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Status:</span>
-                      <span className="ml-2 font-medium text-green-600">{result.status}</span>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 font-medium">Status:</span>
+                      <span className="font-semibold text-green-600">{result.status}</span>
                     </div>
                   </div>
                 </div>
@@ -465,16 +529,19 @@ export default function VideoLocalization() {
                 {/* Video Player Section */}
                 {result.video_with_subtitles && (
                   <div>
-                    <h3 className="text-md font-semibold text-gray-800 mb-2">Video Player</h3>
-                    <div className="bg-gray-900 rounded-lg overflow-hidden">
+                    <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                      Video Preview
+                    </h3>
+                    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
                       {!videoUrl && !isVideoLoading && (
                         <div className="aspect-video bg-gray-800 flex items-center justify-center">
                           <button
                             onClick={() => loadVideoForPlayback(result.video_with_subtitles.filename)}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center shadow-md"
                           >
-                            <Play className="w-4 h-4 mr-2" />
-                            Load Video
+                            <Play className="w-5 h-5 mr-2" />
+                            Load Video Preview
                           </button>
                         </div>
                       )}
@@ -482,8 +549,8 @@ export default function VideoLocalization() {
                       {isVideoLoading && (
                         <div className="aspect-video bg-gray-800 flex items-center justify-center">
                           <div className="text-white text-center">
-                            <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
-                            <p>Loading video...</p>
+                            <Loader className="w-8 h-8 mx-auto mb-4 animate-spin text-green-400" />
+                            <p className="text-lg font-medium">Loading video...</p>
                           </div>
                         </div>
                       )}
@@ -509,8 +576,8 @@ export default function VideoLocalization() {
                           {/* Current Subtitle Display */}
                           {currentSubtitle && (
                             <div className="absolute bottom-12 left-0 right-0 px-4">
-                              <div className="bg-black bg-opacity-75 text-white p-2 rounded-lg text-center">
-                                <p className="text-sm">{currentSubtitle.text}</p>
+                              <div className="bg-black bg-opacity-80 text-white p-3 rounded-lg text-center shadow-lg">
+                                <p className="text-sm font-medium">{currentSubtitle.text}</p>
                               </div>
                             </div>
                           )}
@@ -523,23 +590,26 @@ export default function VideoLocalization() {
                 {/* Subtitle Display */}
                 {subtitles.length > 0 && (
                   <div>
-                    <h3 className="text-md font-semibold text-gray-800 mb-2">Subtitles</h3>
-                    <div className="bg-gray-50 p-3 rounded-lg max-h-64 overflow-y-auto">
+                    <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                      Generated Subtitles
+                    </h3>
+                    <div className="bg-gray-50 border border-gray-200 p-6 rounded-xl max-h-64 overflow-y-auto">
                       {subtitles.map((subtitle, index) => (
                         <div 
                           key={index} 
-                          className={`mb-2 p-2 rounded border-l-2 ${
+                          className={`mb-3 p-4 rounded-lg border-l-4 transition-all duration-300 ${
                             currentSubtitle && currentSubtitle.index === subtitle.index
-                              ? 'bg-green-100 border-green-500'
-                              : 'bg-white border-gray-300'
+                              ? 'bg-green-100 border-green-500 shadow-md'
+                              : 'bg-white border-gray-300 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-xs text-gray-500">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
                               {subtitle.start} → {subtitle.end}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-800">{subtitle.text}</p>
+                          <p className="text-sm text-gray-800 font-medium leading-relaxed">{subtitle.text}</p>
                         </div>
                       ))}
                     </div>
@@ -548,48 +618,53 @@ export default function VideoLocalization() {
 
                 {/* Download Files */}
                 <div>
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">Download Files</h3>
-                  <div className="space-y-2">
+                  <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Download Files
+                  </h3>
+                  <div className="space-y-3">
                     {result.subtitles_file && (
-                      <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                      <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-gray-800">Subtitle File</p>
+                          <p className="font-semibold text-gray-800">Subtitle File (.srt)</p>
                           <p className="text-sm text-gray-500">{result.subtitles_file.filename}</p>
                         </div>
                         <button
                           onClick={() => handleDownloadVideo(result.subtitles_file.filename)}
-                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 flex items-center"
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-md"
                         >
-                          <Download className="w-3 h-3 mr-1" />
+                          <Download className="w-4 h-4 mr-2" />
                           Download
                         </button>
                       </div>
                     )}
                     
                     {result.video_with_subtitles && (
-                      <div className="bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                      <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-gray-800">Video with Subtitles</p>
+                          <p className="font-semibold text-gray-800">Video with Embedded Subtitles</p>
                           <p className="text-sm text-gray-500">{result.video_with_subtitles.filename}</p>
                         </div>
                         <button
                           onClick={() => handleDownloadVideo(result.video_with_subtitles.filename)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 flex items-center"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-md"
                         >
-                          <Download className="w-3 h-3 mr-1" />
-                          Download
+                          <Download className="w-4 h-4 mr-2" />
+                          Download Video
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
-
               </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
-}
+};
+
+export default VideoLocalization;
+
+

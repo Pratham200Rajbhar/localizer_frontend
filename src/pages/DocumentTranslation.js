@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Upload, Languages, Download, Home, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { FileText, Upload, Languages, Download, Home, AlertCircle, CheckCircle, Loader, ArrowLeft, Globe, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../utils/apiService';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
 import { validateFile } from '../utils/fileUtils';
 
-function DocumentTranslation() {
+const DocumentTranslation = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [targetLanguage, setTargetLanguage] = useState('hi');
   const [detectedLanguage, setDetectedLanguage] = useState('');
@@ -248,64 +248,102 @@ function DocumentTranslation() {
 
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
-      <div className="container py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            AI Document Translation
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto text-balance">
-            Upload documents and get accurate translations in multiple Indian languages
-          </p>
+    <div className="min-h-screen" style={{backgroundColor: '#fff7ed'}}>
+      {/* Header Section */}
+      <div className="bg-white" style={{borderBottom: '3px solid #FF9933'}}>
+        <div className="container py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="btn-secondary inline-flex items-center gap-2">
+              <ArrowLeft size={20} />
+              Back to Home
+            </Link>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2" 
+                 style={{backgroundColor: '#fff7ed', color: '#FF9933', border: '2px solid #FF9933'}}>
+              <FileText size={18} />
+              Document Translation
+            </div>
+          </div>
+          
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-6" style={{color: '#000080'}}>
+              AI-Powered Document Translation
+            </h1>
+            <p className="text-lg mb-8" style={{color: '#4b5563'}}>
+              Upload documents in any format and get professional-grade translations across 22+ Indian languages with enterprise-level accuracy
+            </p>
+            
+            {/* Features badges */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium" 
+                   style={{backgroundColor: '#fff7ed', color: '#FF9933', border: '1px solid #FFB366'}}>
+                <FileText size={16} />
+                Multi-format Support
+              </div>
+              <div className="px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium" 
+                   style={{backgroundColor: '#f0fdf4', color: '#138808', border: '1px solid #22c55e'}}>
+                <Zap size={16} />
+                99% Accuracy
+              </div>
+              <div className="px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium" 
+                   style={{backgroundColor: '#eff6ff', color: '#000080', border: '1px solid #3b82f6'}}>
+                <Globe size={16} />
+                22+ Languages
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="container py-12">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-              <span className="text-red-700">{error}</span>
+              <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+              <span className="text-red-700 font-medium">{error}</span>
             </div>
           </div>
         )}
 
         {/* Process Flow */}
-        <div className="flex justify-center mb-12">
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-md">
-                1
+        <div className="mb-12">
+          <div className="flex items-center justify-center max-w-4xl mx-auto">
+            <div className="flex items-center space-x-4 md:space-x-8">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold shadow-lg mb-2">
+                  1
+                </div>
+                <span className="text-sm font-medium text-gray-700">Upload</span>
               </div>
-              <span className="ml-3 text-gray-700 font-medium">Upload Document</span>
-            </div>
-            <div className="w-8 h-1 bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className={`w-10 h-10 ${detectedLanguage ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold shadow-md`}>
-                2
+              <div className="w-8 md:w-16 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col items-center">
+                <div className={`w-12 h-12 ${detectedLanguage ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-xl flex items-center justify-center font-bold shadow-lg mb-2 transition-all duration-300`}>
+                  2
+                </div>
+                <span className="text-sm font-medium text-gray-700">Detect</span>
               </div>
-              <span className="ml-3 text-gray-700 font-medium">Detect Language</span>
-            </div>
-            <div className="w-8 h-1 bg-gray-300"></div>
-            <div className="flex items-center">
-              <div className={`w-10 h-10 ${translatedText ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-full flex items-center justify-center font-bold shadow-md`}>
-                3
+              <div className="w-8 md:w-16 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col items-center">
+                <div className={`w-12 h-12 ${translatedText ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-xl flex items-center justify-center font-bold shadow-lg mb-2 transition-all duration-300`}>
+                  3
+                </div>
+                <span className="text-sm font-medium text-gray-700">Translate</span>
               </div>
-              <span className="ml-3 text-gray-700 font-medium">Translate</span>
             </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Upload className="mr-3 text-blue-600" />
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 flex items-center text-gray-900">
+              <Upload className="mr-3 text-blue-600" size={24} />
               Upload Document
             </h2>
 
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-500 hover:bg-blue-50/30 transition-all duration-300 group">
               <input
                 type="file"
                 onChange={handleFileChange}
@@ -318,63 +356,80 @@ function DocumentTranslation() {
                 htmlFor="file-upload"
                 className="cursor-pointer flex flex-col items-center"
               >
-                <FileText className="w-12 h-12 text-gray-400 mb-4" />
-                <p className="text-lg font-medium text-gray-700 mb-2">
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+                  <FileText className="w-8 h-8 text-blue-600" />
+                </div>
+                <p className="text-lg font-semibold text-gray-700 mb-2">
                   Click to upload or drag and drop
                 </p>
-                <p className="text-gray-500 mb-2">
+                <p className="text-gray-500 mb-4">
                   Supports: TXT, PDF, DOCX, DOC, RTF (Max 100MB)
                 </p>
-                <div className="text-sm text-gray-400">
-                  <p>• PDF files: Advanced text extraction with metadata</p>
-                  <p>• Word documents: Complete DOCX/DOC processing</p>
-                  <p>• Text files: Direct processing with encoding detection</p>
-                  <p>• All formats: Automatic language detection</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+                  <p>• PDF: Advanced text extraction</p>
+                  <p>• Word: Complete document processing</p>
+                  <p>• Text: Direct processing</p>
+                  <p>• Auto language detection</p>
                 </div>
               </label>
             </div>
 
             {/* File Info */}
             {selectedFile && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-800">{selectedFile.name}</p>
-                    <p className="text-sm text-gray-500">
-                      Type: {selectedFile.type || 'Unknown'} | Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB{fileId ? ` | ID: ${fileId}` : ''}
+              <div className="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                      <p className="font-semibold text-gray-800">{selectedFile.name}</p>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">
+                      <span className="font-medium">Type:</span> {selectedFile.type || 'Unknown'} • 
+                      <span className="font-medium"> Size:</span> {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      {fileId && <> • <span className="font-medium">ID:</span> {fileId}</>}
                     </p>
-                     {textMetadata && (
-                       <div className="mt-2 text-xs text-gray-500">
-                         <p>Words: {textMetadata.word_count} | Characters: {textMetadata.char_count}</p>
-                         {textMetadata.pages && <p>Pages: {textMetadata.pages}</p>}
-                         {textMetadata.format && <p>Format: {textMetadata.format.toUpperCase()}</p>}
-                       </div>
-                     )}
-                     {/* Debug info */}
-                     <div className="mt-2 text-xs text-gray-400">
-                       <p>Debug: FileID={fileId ? 'Yes' : 'No'} | Text={originalText ? 'Yes' : 'No'} | SourceLang={detectedLanguage || 'None'}</p>
-                     </div>
-                    {detectedLanguage && (
-                      <div className="mt-2">
-                        <div className="flex items-center">
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-600">
-                            Detected: {detectedLanguage} ({confidence.toFixed(1)}% confidence)
-                          </span>
+                    
+                    {textMetadata && (
+                      <div className="grid grid-cols-2 gap-4 p-3 bg-white rounded-lg border mb-3">
+                        <div className="text-sm">
+                          <span className="font-medium text-gray-600">Words:</span> {textMetadata.word_count}
                         </div>
+                        <div className="text-sm">
+                          <span className="font-medium text-gray-600">Characters:</span> {textMetadata.char_count}
+                        </div>
+                        {textMetadata.pages && (
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-600">Pages:</span> {textMetadata.pages}
+                          </div>
+                        )}
+                        {textMetadata.format && (
+                          <div className="text-sm">
+                            <span className="font-medium text-gray-600">Format:</span> {textMetadata.format.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {detectedLanguage && (
+                      <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                        <span className="text-sm font-medium text-green-700">
+                          Language Detected: {detectedLanguage} ({confidence.toFixed(1)}% confidence)
+                        </span>
                       </div>
                     )}
                   </div>
+                  
                   {isDetecting && (
-                    <div className="flex items-center">
-                      <Loader className="w-5 h-5 text-skillBlue animate-spin mr-2" />
+                    <div className="flex items-center ml-4">
+                      <Loader className="w-6 h-6 text-blue-600 animate-spin mr-2" />
                       <span className="text-sm text-gray-600">
                         {(() => {
                           const ext = selectedFile.name.split('.').pop().toLowerCase();
-                          return ext === 'txt' ? 'Reading text file...' : 
-                                 ext === 'pdf' ? 'Extracting PDF text...' :
-                                 ext === 'docx' || ext === 'doc' ? 'Processing Word document...' :
-                                 'Processing document...';
+                          return ext === 'txt' ? 'Reading...' : 
+                                 ext === 'pdf' ? 'Extracting...' :
+                                 ext === 'docx' || ext === 'doc' ? 'Processing...' :
+                                 'Processing...';
                         })()}
                       </span>
                     </div>
@@ -385,17 +440,17 @@ function DocumentTranslation() {
 
             {/* Language Selection */}
             <div className="mt-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Languages className="w-4 h-4 inline mr-2" />
                 Target Language
               </label>
               <select
                 value={targetLanguage}
                 onChange={(e) => setTargetLanguage(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-skillBlue focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isTranslating}
               >
                 {supportedLanguages.map((lang) => {
-                  // Handle both array format [code, name] and object format {code, name}
                   const code = Array.isArray(lang) ? lang[0] : lang.code;
                   const name = Array.isArray(lang) ? lang[1] : lang.name;
                   return (
@@ -408,15 +463,15 @@ function DocumentTranslation() {
             </div>
 
             {/* Translate Button */}
-              <button
-                onClick={handleTranslate}
-                disabled={(!originalText && !fileId) || !targetLanguage || isTranslating}
-                className="w-full mt-6 bg-skillBlue text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-              >
+            <button
+              onClick={handleTranslate}
+              disabled={(!originalText && !fileId) || !targetLanguage || isTranslating}
+              className="btn-primary w-full mt-8"
+            >
               {isTranslating ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin mr-2" />
-                  Translating...
+                  Translating Document...
                 </>
               ) : (
                 <>
@@ -428,37 +483,38 @@ function DocumentTranslation() {
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 text-gray-900">
               Translation Results
             </h2>
 
             {/* Original Text */}
             {originalText && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
                   Original Text ({detectedLanguage})
                 </h3>
-                <div className="bg-gray-50 p-4 rounded-lg max-h-48 overflow-y-auto">
-                  <p className="text-gray-800 whitespace-pre-wrap">{originalText}</p>
+                <div className="bg-gray-50 border border-gray-200 p-6 rounded-xl max-h-48 overflow-y-auto">
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{originalText}</p>
                 </div>
               </div>
             )}
 
             {/* Translated Text */}
             {translatedText && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Translated Text ({targetLanguage})
                 </h3>
-                <div className="bg-green-50 p-4 rounded-lg max-h-48 overflow-y-auto">
-                  <p className="text-gray-800 whitespace-pre-wrap">{translatedText}</p>
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl max-h-48 overflow-y-auto">
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{translatedText}</p>
                 </div>
 
-                {/* Download Button */}
                 <button
                   onClick={handleDownload}
-                  className="mt-4 bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                  className="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download Translation
@@ -468,37 +524,32 @@ function DocumentTranslation() {
 
             {/* Loading State */}
             {isTranslating && (
-              <div className="text-center py-12">
-                <Loader className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Translating your document...</p>
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Loader className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Processing Translation</h3>
+                <p className="text-gray-500">Using advanced AI models to ensure accuracy...</p>
               </div>
             )}
 
             {/* Empty State */}
             {!originalText && !isTranslating && (
-              <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  Upload a document to see translation results
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <FileText className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready for Translation</h3>
+                <p className="text-gray-500 max-w-sm mx-auto">
+                  Upload your document above to see professional translation results here
                 </p>
               </div>
             )}
           </div>
         </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-12">
-          <Link
-            to="/"
-            className="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <Home className="w-5 h-5 mr-2" />
-            Back to Home
-          </Link>
-        </div>
       </div>
     </div>
   );
-}
+};
 
 export default DocumentTranslation;

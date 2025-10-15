@@ -91,8 +91,25 @@ export const apiService = {
     return response.data;
   },
 
+  // Book-specific upload with enhanced metadata
+  async uploadBook(file, domain = 'education', sourceLanguage = 'en', bookTitle = null, author = null) {
+    const formData = createFormData(file, { 
+      domain, 
+      source_language: sourceLanguage,
+      content_type: 'book',
+      ...(bookTitle && { book_title: bookTitle }),
+      ...(author && { author: author })
+    });
+    
+    const response = await api.post('/content/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
   async listFiles(skip = 0, limit = 10) {
     const response = await api.get(`/content/files?skip=${skip}&limit=${limit}`);
+    console.log('API Response:', response.data);
     return response.data;
   },
 
@@ -160,6 +177,20 @@ export const apiService = {
       target_languages: Array.isArray(targetLanguages) ? targetLanguages : [targetLanguages],
       domain,
       apply_localization: applyLocalization
+    });
+    return response.data;
+  },
+
+  // Book-specific translation with chunking for large books
+  async translateBook(fileId, sourceLanguage, targetLanguage, domain = 'education', applyLocalization = true) {
+    const response = await api.post('/translate', {
+      file_id: fileId,
+      source_language: sourceLanguage,
+      target_language: targetLanguage,
+      domain,
+      apply_localization: applyLocalization,
+      content_type: 'book',
+      chunk_processing: true // Enable chunking for large books
     });
     return response.data;
   },

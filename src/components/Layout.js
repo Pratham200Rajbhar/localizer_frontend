@@ -3,7 +3,7 @@ import Navbar from './Navbar';
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
       <main className="flex-1">
         {children}
@@ -13,3 +13,4 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
+

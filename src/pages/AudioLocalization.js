@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Play, Download, AudioWaveform, AlertCircle, CheckCircle, Loader, Pause, Home } from 'lucide-react';
+import { Mic, Play, Download, AudioWaveform, AlertCircle, CheckCircle, Loader, Pause, Home, ArrowLeft, Volume2, Globe, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
 import { apiService, fileUtils } from '../utils/apiService';
 
-export default function AudioLocalization() {
+const AudioLocalization = () => {
   const [file, setFile] = useState(null);
   const [targetLang, setTargetLang] = useState('hi');
   const [result, setResult] = useState(null);
@@ -258,66 +258,98 @@ export default function AudioLocalization() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-lg mb-6">
-            <AudioWaveform className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container py-8">
+          <div className="flex items-center justify-between mb-6">
+            <Link to="/" className="btn-secondary inline-flex items-center gap-2">
+              <ArrowLeft size={20} />
+              Back to Home
+            </Link>
+            <div className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center gap-2">
+              <AudioWaveform size={16} />
+              Audio Localization
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            Audio Localization
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Convert speech to text, translate across languages, and generate natural-sounding audio
-          </p>
+          
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-6">
+              AI-Powered Audio Localization
+            </h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Convert speech to text, translate across languages, and generate natural-sounding audio with advanced AI voice synthesis
+            </p>
+            
+            {/* Features badges */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="bg-purple-50 text-purple-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Volume2 size={16} className="mr-2" />
+                Voice Synthesis
+              </div>
+              <div className="bg-green-50 text-green-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Zap size={16} className="mr-2" />
+                Fast Processing
+              </div>
+              <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-2 text-sm">
+                <Globe size={16} className="mr-2" />
+                Multi-format Support
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="container py-12">
         {/* Error Display */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-              <span className="text-red-700">{error}</span>
+              <AlertCircle className="h-6 w-6 text-red-500 mr-3" />
+              <span className="text-red-700 font-medium">{error}</span>
             </div>
           </div>
         )}
 
         {/* Process Flow */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-6">
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-purple-600 text-white rounded-lg flex items-center justify-center">
-                <Mic className="w-6 h-6" />
+        <div className="mb-12">
+          <div className="flex items-center justify-center max-w-4xl mx-auto">
+            <div className="flex items-center space-x-4 md:space-x-8">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-purple-600 text-white rounded-xl flex items-center justify-center font-bold shadow-lg mb-2">
+                  <Mic className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Upload</span>
               </div>
-              <span className="mt-2 text-sm text-gray-600">Upload</span>
-            </div>
-            <div className="w-8 h-0.5 bg-gray-300"></div>
-            <div className="flex flex-col items-center">
-              <div className={`w-12 h-12 ${file ? 'bg-blue-600' : 'bg-gray-300'} text-white rounded-lg flex items-center justify-center`}>
-                <AudioWaveform className="w-6 h-6" />
+              <div className="w-8 md:w-16 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col items-center">
+                <div className={`w-12 h-12 ${file ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-xl flex items-center justify-center font-bold shadow-lg mb-2 transition-all duration-300`}>
+                  <AudioWaveform className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Process</span>
               </div>
-              <span className="mt-2 text-sm text-gray-600">Process</span>
-            </div>
-            <div className="w-8 h-0.5 bg-gray-300"></div>
-            <div className="flex flex-col items-center">
-              <div className={`w-12 h-12 ${result ? 'bg-green-600' : 'bg-gray-300'} text-white rounded-lg flex items-center justify-center`}>
-                <Download className="w-6 h-6" />
+              <div className="w-8 md:w-16 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex flex-col items-center">
+                <div className={`w-12 h-12 ${result ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'} rounded-xl flex items-center justify-center font-bold shadow-lg mb-2 transition-all duration-300`}>
+                  <Download className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Download</span>
               </div>
-              <span className="mt-2 text-sm text-gray-600">Download</span>
             </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Upload Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 flex items-center text-gray-900">
+              <Mic className="mr-3 text-purple-600" size={28} />
               Upload Audio File
             </h2>
 
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-purple-500 hover:bg-purple-50/30 transition-all duration-300 group">
               <input
                 type="file"
                 accept=".mp3,.wav,.m4a,.flac,.aac,.ogg,.wma"
@@ -330,48 +362,60 @@ export default function AudioLocalization() {
                 htmlFor="audio-upload"
                 className="cursor-pointer flex flex-col items-center"
               >
-                <div className="w-16 h-16 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-                  <Mic className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+                  <AudioWaveform className="w-8 h-8 text-purple-600" />
                 </div>
                 
-                <p className="text-lg font-semibold text-gray-800 mb-2">
+                <p className="text-lg font-semibold text-gray-700 mb-2">
                   Drop your audio file here
                 </p>
-                <p className="text-gray-500 mb-4">
+                <p className=" text-gray-500 mb-4">
                   or click to browse files
                 </p>
-                <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
-                  <p className="font-medium mb-2">Supported: MP3, WAV, M4A, FLAC, AAC, OGG</p>
-                  <p className="text-xs">Maximum file size: 500MB</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+                  <p>• MP3, WAV, M4A support</p>
+                  <p>• FLAC, AAC, OGG formats</p>
+                  <p>• Maximum 500MB</p>
+                  <p>• High-quality processing</p>
                 </div>
               </label>
             </div>
 
             {/* File Info */}
             {file && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-800">{file.name}</p>
-                    <p className="text-sm text-gray-500">
-                      Size: {(file.size / 1024 / 1024).toFixed(2)} MB
-                      {audioInfo && ` | Duration: ${audioInfo.duration.toFixed(1)}s`}
+              <div className="mt-8 p-6 bg-purple-50 rounded-xl border border-purple-200">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <AudioWaveform className="w-5 h-5 text-purple-600 mr-2" />
+                      <p className="font-semibold text-gray-800">{file.name}</p>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-3">
+                      <span className="font-medium">Size:</span> {(file.size / 1024 / 1024).toFixed(2)} MB
+                      {audioInfo && <> • <span className="font-medium">Duration:</span> {audioInfo.duration.toFixed(1)}s</>}
                     </p>
+                    
+                    <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                      <span className="text-sm font-medium text-green-700">
+                        Audio file ready for processing
+                      </span>
+                    </div>
                   </div>
-                  <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
               </div>
             )}
 
             {/* Language Selection */}
-            <div className="mt-6">
+            <div className="mt-8 ">
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Globe className="w-4 h-4 inline mr-2" />
                 Target Language
               </label>
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isProcessing}
               >
                 {supportedLanguages.map((lang) => {
@@ -390,16 +434,16 @@ export default function AudioLocalization() {
             <button
               onClick={handleTranslateAudio}
               disabled={!file || !targetLang || isProcessing}
-              className="w-full mt-4 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className="btn-primary w-full mt-8"
             >
               {isProcessing ? (
                 <>
-                  <Loader className="w-4 h-4 animate-spin mr-2" />
-                  {processingStatus || 'Processing...'}
+                  <Loader className="w-5 h-5 animate-spin mr-2" />
+                  {processingStatus || 'Processing Audio...'}
                 </>
               ) : (
                 <>
-                  <AudioWaveform className="w-4 h-4 mr-2" />
+                  <AudioWaveform className="w-5 h-5 mr-2" />
                   Localize Audio
                 </>
               )}
@@ -407,55 +451,61 @@ export default function AudioLocalization() {
 
             {/* Progress Bar */}
             {isProcessing && (
-              <div className="mt-4">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>Progress</span>
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                  <span>Processing Progress</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-3">
                   <div 
-                    className="bg-skillBlue h-2 rounded-full transition-all duration-300"
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-300 relative overflow-hidden"
                     style={{ width: `${progress}%` }}
-                  ></div>
+                  >
+                    <div className="absolute inset-0 bg-gray-100"></div>
+                  </div>
                 </div>
+                <p className="text-sm text-gray-600 mt-2">{processingStatus}</p>
               </div>
             )}
           </div>
 
           {/* Results Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Translation Results
+          <div className="card">
+            <h2 className="text-2xl font-bold mb-8 text-gray-900">
+              Localization Results
             </h2>
 
             {/* Original Text */}
             {result && result.original_text && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
                   Original Speech Transcription
                 </h3>
-                <div className="bg-blue-50 p-4 rounded-lg max-h-48 overflow-y-auto">
-                  <p className="text-gray-800 whitespace-pre-wrap">{result.original_text}</p>
+                <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl max-h-48 overflow-y-auto">
+                  <p className="text-gray-800  leading-relaxed whitespace-pre-wrap">{result.original_text}</p>
                 </div>
               </div>
             )}
 
             {/* Translated Text */}
             {result && result.translated_text && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Translated Text ({result.target_language})
                 </h3>
-                <div className="bg-green-50 p-4 rounded-lg max-h-48 overflow-y-auto">
-                  <p className="text-gray-800 whitespace-pre-wrap">{result.translated_text}</p>
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl max-h-48 overflow-y-auto">
+                  <p className="text-gray-800  leading-relaxed whitespace-pre-wrap">{result.translated_text}</p>
                 </div>
               </div>
             )}
 
             {/* Audio Player */}
             {audioUrl && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              <div className="mb-8 p-6 bg-gray-50">
+                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
                   Localized Audio
                 </h3>
                 
@@ -470,39 +520,40 @@ export default function AudioLocalization() {
                   className="hidden"
                 />
                 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow-sm">
                     <button
                       onClick={handlePlayPause}
-                      className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors shadow-md"
                     >
-                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                     </button>
                     
-                    <span className="text-sm text-gray-600 w-10">{formatTime(currentTime)}</span>
+                    <span className="text-sm font-medium text-gray-600 w-12">{formatTime(currentTime)}</span>
                     
                     <div 
-                      className="flex-1 bg-gray-200 rounded-full h-2 cursor-pointer"
+                      className="flex-1 bg-gray-200 rounded-full h-3 cursor-pointer relative"
                       onClick={handleSeek}
                       onMouseDown={handleSeekStart}
                       onMouseUp={handleSeekEnd}
                     >
                       <div 
-                        className="bg-blue-600 h-2 rounded-full"
+                        className="bg-purple-600 h-3 rounded-full transition-all duration-300 relative overflow-hidden"
                         style={{ width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%' }}
-                      ></div>
+                      >
+                        <div className="absolute inset-0 bg-gray-100"></div>
+                      </div>
                     </div>
                     
-                    <span className="text-sm text-gray-600 w-10 text-right">{formatTime(duration)}</span>
+                    <span className="text-sm font-medium text-gray-600 w-12 text-right">{formatTime(duration)}</span>
                   </div>
 
-                  {/* Download Button */}
                   <button
                     onClick={handleDownload}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center justify-center shadow-md"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Audio
+                    <Download className="w-5 h-5 mr-2" />
+                    Download Localized Audio
                   </button>
                 </div>
               </div>
@@ -510,35 +561,35 @@ export default function AudioLocalization() {
 
             {/* Loading State */}
             {isProcessing && (
-              <div className="text-center py-8">
-                <Loader className="w-6 h-6 text-purple-600 animate-spin mx-auto mb-2" />
-                <p className="text-gray-600">{processingStatus}</p>
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Loader className="w-8 h-8 text-purple-600 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Processing Audio</h3>
+                <p className=" text-gray-500">Converting speech and generating natural voice synthesis...</p>
               </div>
             )}
 
             {/* Empty State */}
             {!result && !isProcessing && (
-              <div className="text-center py-8">
-                <AudioWaveform className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500">
-                  Upload an audio file to see translation results
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <AudioWaveform className="w-10 h-10 text-purple-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready for Audio Processing</h3>
+                <p className=" text-gray-500 max-w-sm mx-auto">
+                  Upload your audio file above to see professional localization results with natural voice synthesis
                 </p>
               </div>
             )}
           </div>
         </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-8">
-          <Link
-            to="/"
-            className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <Home className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-        </div>
       </div>
     </div>
   );
-}
+};
+
+export default AudioLocalization;
+
+
+
