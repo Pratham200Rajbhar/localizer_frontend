@@ -1204,8 +1204,9 @@ curl -X GET http://localhost:8000/feedback/123
 
 ### File Upload Requirements
 - **Max file size:** 100MB for documents, 500MB for videos
-- **Supported formats:** .txt, .pdf, .docx, .mp3, .mp4, .wav, .json, .csv
+- **Supported formats:** .txt, .pdf, .docx, .mp3, .mp4, .wav, .json, .csv, .doc, .odt, .rtf, .epub, .mobi, .azw, .azw3, .m4a, .aac, .ogg, .flac, .wma, .opus
 - **Always use multipart/form-data** for file uploads
+- **LMS Integration:** Use `is_lms_book=true` to save books/audio to LMS database
 
 ### Language Codes
 Use ISO language codes for the 22 supported Indian languages:
@@ -1228,3 +1229,406 @@ Use ISO language codes for the 22 supported Indian languages:
 - Always check response status codes
 - Implement retry logic for 5xx errors
 - Validate file types and sizes before upload
+
+---
+
+## LMS (Learning Management System) API Endpoints
+
+### Book Management
+
+#### Upload Book
+```bash
+POST /lms/upload/book
+Content-Type: multipart/form-data
+
+# Form fields:
+- file: Book file (required)
+- title: Book title (optional)
+- author: Author name (optional)
+- subject: Subject/category (optional)
+- grade_level: Grade level (optional)
+- language: Language (optional)
+- description: Description (optional)
+
+# Supported formats: PDF, DOCX, DOC, TXT, RTF, ODT, EPUB, MOBI, AZW, AZW3
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8000/lms/upload/book" \
+  -F "file=@book.pdf" \
+  -F "title=Mathematics Grade 5" \
+  -F "author=John Smith" \
+  -F "subject=Mathematics" \
+  -F "grade_level=5" \
+  -F "language=en" \
+  -F "description=Comprehensive mathematics textbook for grade 5 students"
+```
+
+#### Get All Books
+```bash
+GET /lms/books?skip=0&limit=100&subject=Mathematics&grade_level=5&language=en&author=John Smith
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/lms/books?limit=10&subject=Mathematics"
+```
+
+#### Get Book by ID
+```bash
+GET /lms/book/{book_id}
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/lms/book/123"
+```
+
+#### Delete Book
+```bash
+DELETE /lms/book/{book_id}
+```
+
+**Example:**
+```bash
+curl -X DELETE "http://localhost:8000/lms/book/123"
+```
+
+### Audio Management
+
+#### Upload Audio
+```bash
+POST /lms/upload/audio
+Content-Type: multipart/form-data
+
+# Form fields:
+- file: Audio file (required)
+- title: Audio title (optional)
+- narrator: Narrator name (optional)
+- subject: Subject/category (optional)
+- grade_level: Grade level (optional)
+- language: Language (optional)
+- duration: Duration in seconds (optional)
+- description: Description (optional)
+
+# Supported formats: MP3, WAV, M4A, AAC, OGG, FLAC, WMA, OPUS
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8000/lms/upload/audio" \
+  -F "file=@lesson.mp3" \
+  -F "title=English Pronunciation Lesson 1" \
+  -F "narrator=Sarah Johnson" \
+  -F "subject=English" \
+  -F "grade_level=3" \
+  -F "language=en" \
+  -F "duration=300" \
+  -F "description=Basic English pronunciation for beginners"
+```
+
+#### Get All Audio Files
+```bash
+GET /lms/audio?skip=0&limit=100&subject=English&grade_level=3&language=en&narrator=Sarah Johnson
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/lms/audio?limit=10&subject=English"
+```
+
+#### Get Audio by ID
+```bash
+GET /lms/audio/{audio_id}
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/lms/audio/456"
+```
+
+#### Delete Audio
+```bash
+DELETE /lms/audio/{audio_id}
+```
+
+**Example:**
+```bash
+curl -X DELETE "http://localhost:8000/lms/audio/456"
+```
+
+### LMS Statistics
+
+#### Get LMS Statistics
+```bash
+GET /lms/stats
+```
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/lms/stats"
+```
+
+**Response:**
+```json
+{
+  "total_books": 150,
+  "total_audio_files": 75,
+  "total_content": 225,
+  "book_formats": {
+    ".pdf": 80,
+    ".docx": 45,
+    ".txt": 25
+  },
+  "audio_formats": {
+    ".mp3": 50,
+    ".wav": 15,
+    ".m4a": 10
+  },
+  "languages": {
+    "en": 100,
+    "hi": 75,
+    "bn": 25,
+    "ta": 25
+  },
+  "supported_book_formats": [".pdf", ".docx", ".doc", ".txt", ".rtf", ".odt", ".epub", ".mobi", ".azw", ".azw3"],
+  "supported_audio_formats": [".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".wma", ".opus"]
+}
+```
+
+### LMS Response Format
+
+All LMS endpoints return a standardized response format:
+
+```json
+{
+  "id": 123,
+  "filename": "book_123.pdf",
+  "original_filename": "Mathematics Grade 5.pdf",
+  "path": "/storage/uploads/book_123.pdf",
+  "file_type": ".pdf",
+  "size": 2048576,
+  "domain": "lms_book",
+  "source_language": "en",
+  "created_at": "2024-01-15T10:30:00Z",
+  "extracted_text": "Full text content of the book...",
+  "text_metadata": {
+    "word_count": 5000,
+    "char_count": 30000,
+    "pages": 25,
+    "format": "pdf",
+    "encoding": "utf-8",
+    "method": "PyPDF2",
+    "paragraphs": 150,
+    "tables": 5,
+    "title": "Mathematics Grade 5",
+    "author": "John Smith",
+    "subject": "Mathematics",
+    "grade_level": "5",
+    "language": "en",
+    "description": "Comprehensive mathematics textbook"
+  },
+  "extraction_status": "success",
+  "lms_metadata": {
+    "type": "book",
+    "title": "Mathematics Grade 5",
+    "author": "John Smith",
+    "subject": "Mathematics",
+    "grade_level": "5",
+    "language": "en",
+    "description": "Comprehensive mathematics textbook"
+  }
+}
+```
+
+### LMS Features
+
+#### Supported Book Formats
+- **PDF**: `.pdf` - Portable Document Format
+- **Microsoft Word**: `.docx`, `.doc` - Word documents
+- **Text**: `.txt` - Plain text files
+- **Rich Text**: `.rtf` - Rich Text Format
+- **OpenDocument**: `.odt` - OpenDocument Text
+- **E-books**: `.epub`, `.mobi`, `.azw`, `.azw3` - E-book formats
+
+#### Supported Audio Formats
+- **MP3**: `.mp3` - MPEG Audio Layer 3
+- **WAV**: `.wav` - Waveform Audio File Format
+- **M4A**: `.m4a` - MPEG-4 Audio
+- **AAC**: `.aac` - Advanced Audio Coding
+- **OGG**: `.ogg` - Ogg Vorbis
+- **FLAC**: `.flac` - Free Lossless Audio Codec
+- **WMA**: `.wma` - Windows Media Audio
+- **OPUS**: `.opus` - Opus Audio Codec
+
+#### Key Features
+- **Automatic Text Extraction**: Books are automatically processed for text content
+- **Rich Metadata**: Comprehensive metadata storage for educational content
+- **Multi-Language Support**: Support for all 22 Indian languages plus English
+- **Filtering & Search**: Advanced filtering by subject, grade level, language, etc.
+- **Statistics Dashboard**: Detailed analytics and usage statistics
+- **File Management**: Complete CRUD operations for books and audio files
+- **Error Handling**: Robust error handling with detailed error messages
+
+---
+
+## LMS Integration with Upload Endpoint
+
+### Enhanced Upload Endpoint with LMS Integration
+
+The `/upload` endpoint has been enhanced to support LMS integration, allowing you to upload books and audio files that are automatically saved to the LMS database.
+
+#### Upload with LMS Integration
+```bash
+POST /upload
+Content-Type: multipart/form-data
+
+# Form fields:
+- file: File (required)
+- title: Title (optional)
+- author: Author/Narrator (optional)
+- subject: Subject (optional)
+- grade_level: Grade level (optional)
+- language: Language (optional)
+- description: Description (optional)
+- is_lms_book: true/false (optional, default: false)
+```
+
+**Example - Upload Book with LMS Integration:**
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@mathematics_grade5.pdf" \
+  -F "title=Mathematics Grade 5" \
+  -F "author=John Smith" \
+  -F "subject=Mathematics" \
+  -F "grade_level=5" \
+  -F "language=en" \
+  -F "description=Comprehensive mathematics textbook" \
+  -F "is_lms_book=true"
+```
+
+**Example - Upload Audio with LMS Integration:**
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@english_lesson.mp3" \
+  -F "title=English Pronunciation" \
+  -F "author=Sarah Johnson" \
+  -F "subject=English" \
+  -F "grade_level=3" \
+  -F "language=en" \
+  -F "is_lms_book=true"
+```
+
+**Response Format:**
+```json
+{
+  "id": "52c23271-4590-4c05-9bad-a2cd8726c9c1",
+  "file_id": "52c23271-4590-4c05-9bad-a2cd8726c9c1",
+  "db_id": 156,
+  "filename": "mathematics_grade5.pdf",
+  "size": 2048576,
+  "path": "/storage/uploads/52c23271-4590-4c05-9bad-a2cd8726c9c1/mathematics_grade5.pdf",
+  "file_type": ".pdf",
+  "content_type": "application/pdf",
+  "status": "uploaded",
+  "message": "File uploaded successfully",
+  "extracted_text": "Full text content...",
+  "text_metadata": {
+    "word_count": 5000,
+    "char_count": 30000,
+    "pages": 25,
+    "format": "pdf"
+  },
+  "extraction_status": "success",
+  "is_lms_book": true,
+  "lms_metadata": {
+    "type": "book",
+    "title": "Mathematics Grade 5",
+    "author": "John Smith",
+    "subject": "Mathematics",
+    "grade_level": "5",
+    "language": "en",
+    "description": "Comprehensive mathematics textbook"
+  }
+}
+```
+
+### Fetch LMS Books through Content API
+
+#### Get All Files (including LMS)
+```bash
+GET /content/files?include_lms=true&limit=100
+```
+
+#### Get LMS Books Only
+```bash
+GET /content/files?domain=lms_book&limit=100
+```
+
+#### Get LMS Audio Only
+```bash
+GET /content/files?domain=lms_audio&limit=100
+```
+
+#### Get Files Excluding LMS
+```bash
+GET /content/files?include_lms=false&limit=100
+```
+
+#### Get LMS Books via Content API
+```bash
+GET /content/lms/books?limit=100&language=en
+```
+
+#### Get LMS Audio via Content API
+```bash
+GET /content/lms/audio?limit=100&language=en
+```
+
+### Integration Benefits
+
+1. **Unified Upload**: Use the same `/upload` endpoint for both regular files and LMS content
+2. **Automatic Database Storage**: LMS books are automatically saved to the database when `is_lms_book=true`
+3. **Flexible Retrieval**: Access LMS content through multiple endpoints
+4. **Backward Compatibility**: Existing upload functionality remains unchanged
+5. **Rich Metadata**: Full LMS metadata support through the upload endpoint
+6. **Text Extraction**: Automatic text extraction for document files
+7. **Multiple Formats**: Support for all LMS-supported file formats
+
+### Usage Examples
+
+#### Upload a Science Book
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@science_grade6.pdf" \
+  -F "title=Science Grade 6 - Chapter 2" \
+  -F "author=Dr. Jane Smith" \
+  -F "subject=Science" \
+  -F "grade_level=6" \
+  -F "language=en" \
+  -F "description=Comprehensive science textbook" \
+  -F "is_lms_book=true"
+```
+
+#### Upload an Audio Lesson
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@pronunciation_lesson.mp3" \
+  -F "title=English Pronunciation Lesson 1" \
+  -F "author=Sarah Johnson" \
+  -F "subject=English" \
+  -F "grade_level=3" \
+  -F "language=en" \
+  -F "is_lms_book=true"
+```
+
+#### Retrieve All LMS Books
+```bash
+curl -X GET "http://localhost:8000/content/files?domain=lms_book&limit=10"
+```
+
+#### Retrieve LMS Books by Language
+```bash
+curl -X GET "http://localhost:8000/content/lms/books?language=en&limit=10"
+```

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Upload, Languages, Download, Home, AlertCircle, CheckCircle, Loader, ArrowLeft, Globe, Zap } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FileText, Upload, Languages, Download, Home, AlertCircle, CheckCircle, Loader, ArrowLeft, Globe, Zap, Volume2, Play, Pause } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../utils/apiService';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
@@ -18,6 +18,15 @@ const DocumentTranslation = () => {
   const [supportedLanguages, setSupportedLanguages] = useState(DEFAULT_LANGUAGES);
   const [fileId, setFileId] = useState(null); // Store the uploaded file ID
   const [textMetadata, setTextMetadata] = useState(null); // Store text metadata
+  
+  // Text-to-Speech states
+  const [isTTSLoading, setIsTTSLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [ttsError, setTtsError] = useState('');
+  const audioRef = useRef(null);
 
   // Load supported languages from API
   useEffect(() => {
@@ -245,10 +254,199 @@ const DocumentTranslation = () => {
     }
   };
 
+  // Text-to-Speech functions
+  const generateTTS = async () => {
+    if (!translatedText) return;
 
+    setIsTTSLoading(true);
+    setTtsError('');
+    
+    try {
+      console.log('🎵 Generating TTS for translated text...');
+      console.log('📝 Text length:', translatedText.length);
+      console.log('🌍 Target language:', targetLanguage);
+      console.log('📝 Text preview:', translatedText.substring(0, 100) + '...');
+
+      // Validate text length (limit to reasonable size for TTS)
+      const maxLength = 1000;
+      const textToProcess = translatedText.length > maxLength 
+        ? translatedText.substring(0, maxLength) + '...'
+        : translatedText;
+
+      // Validate and sanitize text (remove any problematic characters)
+      const sanitizedText = textToProcess.replace(/[^\w\s.,!?;:'"()-]/g, ' ').trim();
+      
+      if (!sanitizedText) {
+        throw new Error('No valid text content to convert to speech');
+      }
+
+      console.log('📝 Processing text length:', sanitizedText.length);
+      console.log('📝 Sanitized text preview:', sanitizedText.substring(0, 50) + '...');
+
+      // Use a fallback language if target language might not be supported
+      const ttsLanguage = targetLanguage || 'en';
+      console.log('🌍 Using TTS language:', ttsLanguage);
+
+      const response = await apiService.textToSpeech(
+        sanitizedText,
+        ttsLanguage,
+        1.0, // Default voice speed
+        'mp3'
+      );
+
+      console.log('✅ TTS generated successfully:', response);
+
+      if (response.output_file) {
+        // Download the audio file and create a blob URL
+        const audioBlob = await apiService.downloadAudio(response.output_file);
+        const audioBlobUrl = URL.createObjectURL(audioBlob);
+        setAudioUrl(audioBlobUrl);
+        
+        // Set up audio element
+        if (audioRef.current) {
+          audioRef.current.src = audioBlobUrl;
+          audioRef.current.load();
+        }
+      } else {
+        console.warn('⚠️ No output_file in TTS response:', response);
+        setTtsError('Audio generated but no file path returned');
+      }
+    } catch (error) {
+      console.error('❌ TTS generation failed:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      let errorMessage = 'Failed to generate audio';
+      if (error.response?.status === 422) {
+        errorMessage = 'Invalid request parameters. Please check the text and language settings.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setTtsError(errorMessage);
+    } finally {
+      setIsTTSLoading(false);
+    }
+  };
+
+  const togglePlayPause = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  const handleSeek = (e) => {
+    if (!audioRef.current) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const newTime = (clickX / width) * duration;
+    
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Audio event handlers
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleDurationChange = () => setDuration(audio.duration);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+      setCurrentTime(0);
+    };
+    const handleLoadStart = () => console.log('🎵 Audio loading started');
+    const handleCanPlay = () => console.log('🎵 Audio ready to play');
+    const handleError = (e) => {
+      console.error('❌ Audio error:', e);
+      setTtsError('Audio playback error');
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('durationchange', handleDurationChange);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('durationchange', handleDurationChange);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [audioUrl]);
+
+  // Cleanup audio URL on unmount
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   return (
     <div className="min-h-screen" style={{backgroundColor: '#fff7ed'}}>
+      {/* Custom CSS for audio player */}
+      <style jsx>{`
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider::-webkit-slider-track {
+          background: #e5e7eb;
+          height: 4px;
+          border-radius: 2px;
+        }
+        
+        .slider::-moz-range-track {
+          background: #e5e7eb;
+          height: 4px;
+          border-radius: 2px;
+        }
+      `}</style>
       {/* Header Section */}
       <div className="bg-white" style={{borderBottom: '3px solid #FF9933'}}>
         <div className="container py-8">
@@ -519,6 +717,83 @@ const DocumentTranslation = () => {
                   <Download className="w-4 h-4 mr-2" />
                   Download Translation
                 </button>
+
+                {/* Professional Audio Player */}
+       <div className="mt-8 bg-white border border-gray-200 rounded-lg p-6">
+         <div className="flex items-center justify-between mb-4">
+           <h3 className="text-lg font-semibold text-gray-800">Text-to-Speech</h3>
+           <button
+             onClick={generateTTS}
+             disabled={isTTSLoading}
+             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 flex items-center"
+           >
+             {isTTSLoading ? (
+               <>
+                 <Loader className="w-4 h-4 mr-2 animate-spin" />
+                 Generating...
+               </>
+             ) : (
+               <>
+                 <Volume2 className="w-4 h-4 mr-2" />
+                 Generate Audio
+               </>
+             )}
+           </button>
+         </div>
+
+         {/* Hidden audio element */}
+         <audio ref={audioRef} preload="metadata" />
+         
+         {audioUrl ? (
+           <div className="space-y-4">
+             {/* Simple Seek Bar */}
+             <div>
+               <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                 <span>{formatTime(currentTime)}</span>
+                 <span>{formatTime(duration)}</span>
+               </div>
+               <div 
+                 className="relative w-full h-2 bg-gray-200 rounded-full cursor-pointer"
+                 onClick={handleSeek}
+               >
+                 <div 
+                   className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-100"
+                   style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
+                 />
+               </div>
+             </div>
+
+             {/* Simple Play Button */}
+             <div className="flex justify-center">
+               <button
+                 onClick={togglePlayPause}
+                 className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-all"
+               >
+                 {isPlaying ? (
+                   <Pause className="w-6 h-6" />
+                 ) : (
+                   <Play className="w-6 h-6 ml-1" />
+                 )}
+               </button>
+             </div>
+           </div>
+         ) : (
+           <div className="text-center py-8">
+             <Volume2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+             <p className="text-gray-500">Click "Generate Audio" to create audio from translated text</p>
+           </div>
+         )}
+
+         {/* Error Display */}
+         {ttsError && (
+           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+             <div className="flex items-center">
+               <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
+               <span className="text-red-700 font-medium">{ttsError}</span>
+             </div>
+           </div>
+         )}
+       </div>
               </div>
             )}
 

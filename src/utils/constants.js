@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || 'https://api.safehorizon.com',
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
   TIMEOUT: 0, // No timeout for audio processing
   MAX_FILE_SIZE: 500 * 1024 * 1024, // 500MB for audio files
   SUPPORTED_FORMATS: {

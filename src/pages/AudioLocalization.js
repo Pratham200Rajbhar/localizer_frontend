@@ -27,8 +27,16 @@ const AudioLocalization = () => {
 
   // Load supported languages on component mount
   useEffect(() => {
+    console.log('🚀 AudioLocalization component mounted');
     loadSupportedLanguages();
   }, []);
+
+  // Log when target language changes
+  useEffect(() => {
+    if (targetLang) {
+      console.log('🌍 Target language changed to:', targetLang);
+    }
+  }, [targetLang]);
 
   // Cleanup audio URL on unmount
   useEffect(() => {
@@ -41,22 +49,41 @@ const AudioLocalization = () => {
 
   const loadSupportedLanguages = async () => {
     try {
+      console.log('🌍 Loading supported languages...');
       const response = await apiService.getSupportedLanguages();
+      console.log('📋 Languages API response:', response);
+      
       if (response.supported_languages) {
         const langArray = Object.entries(response.supported_languages);
+        console.log('✅ Using supported_languages object, found:', langArray.length, 'languages');
         setSupportedLanguages(langArray);
       } else if (Array.isArray(response)) {
+        console.log('✅ Using array format, found:', response.length, 'languages');
         setSupportedLanguages(response);
+      } else {
+        console.log('⚠️ Unexpected response format, using default languages');
+        setSupportedLanguages(DEFAULT_LANGUAGES);
       }
     } catch (error) {
-      console.error('Failed to load supported languages:', error);
+      console.error('❌ Failed to load supported languages:', error);
+      console.log('🔄 Falling back to default languages');
       setSupportedLanguages(DEFAULT_LANGUAGES);
     }
   };
 
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      console.log('❌ No file selected');
+      return;
+    }
+
+    console.log('📁 File selected:', {
+      name: selectedFile.name,
+      size: selectedFile.size,
+      type: selectedFile.type,
+      lastModified: new Date(selectedFile.lastModified).toISOString()
+    });
 
     setError('');
     setFile(null);
@@ -64,18 +91,27 @@ const AudioLocalization = () => {
     setAudioUrl(null);
 
     try {
+      console.log('🔍 Validating audio file...');
       // Validate file
       fileUtils.validateFile(selectedFile, 'audio');
+      console.log('✅ Basic file validation passed');
       
       // Validate audio file with duration check
+      console.log('🎵 Validating audio file with duration check...');
       const validation = await apiService.validateAudioFile(selectedFile);
+      console.log('📊 Audio validation result:', validation);
+      
       if (!validation.isValid) {
+        console.error('❌ Audio validation failed:', validation.error);
         throw new Error(validation.error);
       }
 
+      console.log('✅ Audio file validation successful');
       setFile(selectedFile);
       setAudioInfo(validation);
+      console.log('📋 File state updated successfully');
     } catch (error) {
+      console.error('❌ File validation error:', error);
       setError(error.message);
       setFile(null);
     }
@@ -83,6 +119,10 @@ const AudioLocalization = () => {
 
   const handleTranslateAudio = async () => {
     if (!file || !targetLang) return;
+
+    console.log('🎵 Starting Audio Localization Process');
+    console.log('📁 File:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+    console.log('🌍 Target Language:', targetLang);
 
     setIsProcessing(true);
     setError('');
@@ -100,43 +140,73 @@ const AudioLocalization = () => {
     }
 
     try {
+      // Step 1: Audio Validation
+      console.log('🔍 Step 1: Validating audio file...');
+      setProcessingStatus('Validating audio file...');
+      setProgress(20);
+
       // Step 2: Speech-to-Text Processing
+      console.log('🎤 Step 2: Converting speech to text...');
       setProcessingStatus('Converting speech to text...');
       setProgress(40);
 
       // Step 3: Translation Processing
+      console.log('🔄 Step 3: Translating text...');
       setProcessingStatus('Translating text...');
       setProgress(60);
 
       // Step 4: Text-to-Speech Processing
+      console.log('🔊 Step 4: Generating translated audio...');
       setProcessingStatus('Generating translated audio...');
       setProgress(80);
 
       // Call the main localization API
+      console.log('🚀 Calling API: localizeAudio');
       const apiResult = await apiService.localizeAudio(file, targetLang, 'general', {});
+      console.log('✅ API Response received:', apiResult);
 
       // Extract translated text from API response
       let translatedText = '';
       let originalText = '';
       
+      console.log('📝 Extracting text from API response...');
+      
       if (apiResult) {
+        console.log('📊 API Result structure:', {
+          hasTranslatedText: !!apiResult.translated_text,
+          hasOriginalText: !!apiResult.original_text,
+          hasPipelineSteps: !!apiResult.pipeline_steps,
+          hasResults: !!apiResult.results,
+          resultKeys: Object.keys(apiResult)
+        });
+
         if (apiResult.translated_text) {
           translatedText = apiResult.translated_text;
           originalText = apiResult.original_text || '';
+          console.log('✅ Using direct translated_text field');
+          console.log('📄 Original text length:', originalText.length);
+          console.log('📄 Translated text length:', translatedText.length);
         }
         else if (apiResult.pipeline_steps && apiResult.pipeline_steps.translation) {
           translatedText = apiResult.pipeline_steps.translation.translated_text || '';
           originalText = apiResult.pipeline_steps.stt?.transcribed_text || '';
+          console.log('✅ Using pipeline_steps structure');
+          console.log('📄 Original text length:', originalText.length);
+          console.log('📄 Translated text length:', translatedText.length);
         }
         else if (apiResult.results && Array.isArray(apiResult.results) && apiResult.results.length > 0) {
           const firstResult = apiResult.results[0];
           translatedText = firstResult.translated_text || '';
           originalText = firstResult.original_text || apiResult.original_text || '';
+          console.log('✅ Using results array structure');
+          console.log('📄 Original text length:', originalText.length);
+          console.log('📄 Translated text length:', translatedText.length);
         }
       }
       
       if (!translatedText) {
         translatedText = 'Translation completed successfully';
+        console.log('⚠️ No translated text found, using fallback message');
       }
 
       const findLanguageName = (code) => {
@@ -144,57 +214,89 @@ const AudioLocalization = () => {
         return lang ? (Array.isArray(lang) ? lang[1] : lang.name) : code.toUpperCase();
       };
 
-      setResult({
+      const resultData = {
         original_text: originalText,
         translated_text: translatedText,
         target_language: findLanguageName(targetLang),
         confidence: apiResult.pipeline_steps?.translation?.confidence_score || 0.94,
         duration: apiResult.processing_time_seconds || apiResult.processing_time || 0,
         output_file: apiResult.output_file
+      };
+
+      console.log('📋 Final result data:', {
+        originalTextLength: resultData.original_text.length,
+        translatedTextLength: resultData.translated_text.length,
+        targetLanguage: resultData.target_language,
+        confidence: resultData.confidence,
+        duration: resultData.duration
       });
+
+      setResult(resultData);
       
       setProgress(100);
       setProcessingStatus('Audio localization completed successfully!');
+      console.log('🎉 Audio localization completed successfully!');
 
       // Create audio URL for playback
       if (apiResult.output_file || apiResult.output_path) {
         try {
+          console.log('🎵 Creating audio URL for playback...');
           const filename = apiResult.output_path ? apiResult.output_path.split('/').pop() : apiResult.output_file.split('/').pop();
+          console.log('📁 Audio filename:', filename);
+          
           const audioBlob = await apiService.downloadAudio(filename);
+          console.log('⬇️ Audio blob downloaded, size:', audioBlob.size);
+          
           const audioBlobUrl = URL.createObjectURL(audioBlob);
           setAudioUrl(audioBlobUrl);
+          console.log('🔗 Audio URL created:', audioBlobUrl);
         } catch (audioErr) {
-          console.warn('Failed to create audio URL:', audioErr);
+          console.warn('⚠️ Failed to create audio URL:', audioErr);
         }
+      } else {
+        console.log('ℹ️ No audio output file available for playback');
       }
 
     } catch (error) {
-      console.error('Audio localization failed:', error);
+      console.error('❌ Audio localization failed:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setError(error.message || 'Failed to process audio file. Please try again.');
     } finally {
       setIsProcessing(false);
+      console.log('🏁 Audio localization process finished');
     }
   };
 
   // Audio player functions
   const handlePlayPause = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      console.log('❌ Audio ref not available');
+      return;
+    }
     
     if (isPlaying) {
+      console.log('⏸️ Pausing audio');
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      console.log('▶️ Playing audio');
       audioRef.current.play();
       setIsPlaying(true);
     }
   };
 
   const handleAudioEnded = () => {
+    console.log('🏁 Audio playback ended');
     setIsPlaying(false);
     setCurrentTime(0);
   };
 
   const handleAudioError = () => {
+    console.error('❌ Audio playback error');
     setIsPlaying(false);
     setError('Failed to load audio file');
   };
@@ -239,11 +341,19 @@ const AudioLocalization = () => {
   };
 
   const handleDownload = async () => {
-    if (!result?.output_file) return;
+    if (!result?.output_file) {
+      console.log('❌ No output file available for download');
+      return;
+    }
     
     try {
+      console.log('⬇️ Starting audio download...');
       const filename = result.output_file.split('/').pop();
+      console.log('📁 Downloading file:', filename);
+      
       const audioBlob = await apiService.downloadAudio(filename);
+      console.log('✅ Audio blob downloaded, size:', audioBlob.size);
+      
       const url = URL.createObjectURL(audioBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -252,7 +362,10 @@ const AudioLocalization = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      console.log('🎉 Audio download completed successfully');
     } catch (error) {
+      console.error('❌ Download failed:', error);
       setError('Failed to download audio file');
     }
   };
@@ -482,8 +595,8 @@ const AudioLocalization = () => {
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
                   Original Speech Transcription
                 </h3>
-                <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl max-h-48 overflow-y-auto">
-                  <p className="text-gray-800  leading-relaxed whitespace-pre-wrap">{result.original_text}</p>
+                <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl">
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap break-words">{result.original_text}</p>
                 </div>
               </div>
             )}
@@ -495,8 +608,8 @@ const AudioLocalization = () => {
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Translated Text ({result.target_language})
                 </h3>
-                <div className="bg-green-50 border border-green-200 p-6 rounded-xl max-h-48 overflow-y-auto">
-                  <p className="text-gray-800  leading-relaxed whitespace-pre-wrap">{result.translated_text}</p>
+                <div className="bg-green-50 border border-green-200 p-6 rounded-xl">
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap break-words">{result.translated_text}</p>
                 </div>
               </div>
             )}
