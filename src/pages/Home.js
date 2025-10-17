@@ -11,11 +11,10 @@ import {
   Users,
   Award,
   ChevronRight,
-  Mic,
-  Languages,
   ArrowRight,
   CheckCircle,
-  Star
+  Star,
+  AlertCircle
 } from 'lucide-react';
 
 const Home = () => {
@@ -24,19 +23,19 @@ const Home = () => {
       icon: <FileText size={24} />,
       title: "Document Translation",
       description: "Translate PDFs, Word docs, and text files with 99% accuracy",
-      link: "/document-translation"
+      link: "/document"
     },
     {
       icon: <Volume2 size={24} />,
       title: "Audio Localization",
       description: "Convert speech to multiple languages with natural voice",
-      link: "/audio-localization"
+      link: "/audio"
     },
     {
       icon: <Video size={24} />,
       title: "Video Localization",
       description: "Generate subtitles and professional dubbing",
-      link: "/video-localization"
+      link: "/video"
     },
     {
       icon: <Globe size={24} />,
@@ -124,17 +123,48 @@ const Home = () => {
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link to="/document-translation" className="btn-primary inline-flex items-center gap-2">
+              <Link to="/document" className="btn-primary inline-flex items-center gap-2">
                 <FileText size={20} />
                 Start Translating
                 <ArrowRight size={20} />
               </Link>
               
-              <Link to="/about" className="btn-secondary inline-flex items-center gap-2">
+              <a 
+                href="https://youtu.be/CuezATiplts" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn-secondary inline-flex items-center gap-2"
+              >
                 <Video size={20} />
                 View Demo
                 <ChevronRight size={20} />
-              </Link>
+              </a>
+            </div>
+
+            {/* Demo Video Notice */}
+            <div className="max-w-2xl mx-auto mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <Video className="h-5 w-5 text-blue-600 mt-0.5" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> We're currently running on CPU processing as we can't afford GPU servers yet. Some features may take longer or occasionally not work. Watch our demo video to see the full potential!
+                  </p>
+                  <div className="mt-3">
+                    <a 
+                      href="https://youtu.be/CuezATiplts" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
+                    >
+                      <Video size={16} className="mr-1" />
+                      Watch Demo Video
+                      <ChevronRight size={16} className="ml-1" />
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Stats */}
@@ -259,7 +289,7 @@ const Home = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link 
-                to="/document-translation" 
+                to="/document" 
                 className="bg-white hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center gap-2"
                 style={{color: '#000080'}}
               >

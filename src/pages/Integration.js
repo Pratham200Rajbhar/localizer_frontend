@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Play, Copy, CheckCircle, AlertCircle, Loader, Terminal, Code } from 'lucide-react';
+import { ArrowLeft, Play, Copy, CheckCircle, AlertCircle, Loader, Terminal, Code, Video, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiService } from '../utils/apiService';
 
@@ -261,6 +261,32 @@ const Integration = () => {
 
       {/* Main Content */}
       <div className="container py-8">
+        {/* Demo Video Notice */}
+        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <Video className="h-5 w-5 text-blue-600 mt-0.5" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> We're currently running on CPU processing as we can't afford GPU servers yet. Some features may take longer or occasionally not work. Watch our demo video to see the full potential!
+              </p>
+              <div className="mt-2">
+                <a 
+                  href="https://youtu.be/CuezATiplts" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
+                >
+                  <Video size={16} className="mr-1" />
+                  Watch Demo Video
+                  <ChevronRight size={16} className="ml-1" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Error Display */}
         {error && (
           <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl">

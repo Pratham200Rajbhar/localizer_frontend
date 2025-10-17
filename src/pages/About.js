@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Users, Code, Globe, Zap, Shield, Award, Target, ArrowLeft, 
   CheckCircle, Star, Languages, Mic, Video, FileText,
-  IndianRupee, Brain, TrendingUp, BookOpen, Cpu
+  IndianRupee, Brain, TrendingUp, BookOpen, Cpu, AlertCircle, ChevronRight
 } from 'lucide-react';
 import { DEFAULT_LANGUAGES } from '../utils/constants';
 
@@ -115,6 +115,32 @@ const About = () => {
 
       {/* Problem Overview */}
       <div className="container mx-auto px-6 py-16">
+        {/* Demo Video Notice */}
+        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <Video className="h-5 w-5 text-blue-600 mt-0.5" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> We're currently running on CPU processing as we can't afford GPU servers yet. Some features may take longer or occasionally not work. Watch our demo video to see the full potential!
+              </p>
+              <div className="mt-2">
+                <a 
+                  href="https://youtu.be/CuezATiplts" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm font-medium text-blue-800 hover:text-blue-900"
+                >
+                  <Video size={16} className="mr-1" />
+                  Watch Demo Video
+                  <ChevronRight size={16} className="ml-1" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">The Challenge We're Solving</h2>
@@ -356,12 +382,14 @@ const About = () => {
               >
                 Explore Platform
               </button>
-              <button 
-                onClick={() => navigate('/document-translation')} 
-                className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-indigo-600 transition-all duration-300"
+              <a 
+                href="https://youtu.be/CuezATiplts" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="border-2 border-white text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-indigo-600 transition-all duration-300 inline-block"
               >
                 Try Demo
-              </button>
+              </a>
             </div>
             
             <p className="mt-8 text-center text-sm opacity-75">
